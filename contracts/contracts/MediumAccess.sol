@@ -20,6 +20,10 @@ contract MediumAccess is ERC1155, Ownable, PaymentAggregator {
         _setURI(newuri);
     }
 
+    error AlreadyOwned (address minter, uint tokenId);
+    error OnlyMintOne ();
+    error InvalidFunds (uint fundsSent, uint fundsRequired);
+    error ArticleIdTooBig (uint maxId, uint requestedId);
 
     // use data to provide a signature? nah can leave it open for a PoC tbh
     // use id to route logic
@@ -30,18 +34,21 @@ contract MediumAccess is ERC1155, Ownable, PaymentAggregator {
         bytes memory data
     ) public payable {
         if (ERC1155.balanceOf(account, id) > 0) {
-            revert("Already owned");
+            //revert("Already owned");
+            revert AlreadyOwned (account, id);
         }
 
         if (amount != 1) {
-            revert("Invalid amount to mint");
+            //revert("Invalid amount to mint");
+            revert OnlyMintOne();
         }
 
         (address creator, , bool isPaying) = parseTokenId(id);
 
         if (creator != msg.sender) {
             if (isPaying && msg.value != mintPrice) {
-                revert("Invalid Funds");
+                //revert("Invalid Funds");
+                revert InvalidFunds(msg.value, mintPrice);
             } else {
                 aggregated[creator] += msg.value;
             }
@@ -70,7 +77,10 @@ contract MediumAccess is ERC1155, Ownable, PaymentAggregator {
         uint256 articleId,
         bool isPaying
     ) public pure returns (uint256) {
-        require(articleId <= MAX_ARTICLE_ID, "Article ID too large");
+        if (articleId >= MAX_ARTICLE_ID) {
+            revert ArticleIdTooBig(MAX_ARTICLE_ID, articleId);
+        }
+        //require(articleId <= MAX_ARTICLE_ID, "Article ID too large");
 
         uint256 tokenId = (uint256(uint160(creator)) << 96) + (articleId << 1);
         if (isPaying) {
