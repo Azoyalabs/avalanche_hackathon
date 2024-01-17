@@ -6,6 +6,13 @@ import { expect } from "chai";
 import hre from "hardhat";
 import { getAddress, parseGwei, Account } from "viem";
 
+import '@openzeppelin/hardhat-upgrades';
+
+
+import chai from "chai";
+import { solidity } from "ethereum-waffle";
+
+chai.use(solidity);
 
 
 describe("MediumAccess", function () {
@@ -23,32 +30,6 @@ describe("MediumAccess", function () {
             otherAccount,
             publicClient
         }
-    }
-
-    async function mintAuthorToken(creator: Account, articleId: BigInt, isPaying: boolean, mediumAccess: any): Promise<BigInt> {
-        const tokenId: BigInt = await mediumAccess.read.createTokenId([creator.address, articleId, isPaying]);
-
-        await mediumAccess.write.mint([
-            creator.address,
-            tokenId,
-            BigInt(1),
-            "0x"
-        ],
-            { account: creator })
-
-        return tokenId;
-    }
-
-    async function mintReaderToken(reader: Account, tokenId: BigInt, isPaying: boolean, mediumAccess: any) {
-        const msgValue = isPaying ? await mediumAccess.read.mintPrice() : BigInt(0);
-
-        await mediumAccess.write.mint([
-            reader.address,
-            tokenId,
-            BigInt(1),
-            "0x"
-        ],
-            { account: reader, value: msgValue });
     }
 
 
@@ -80,47 +61,94 @@ describe("MediumAccess", function () {
 
     describe("Mints", function () {
         it("Author can mint a token representing a new article", async function () {
-            const { mediumAccess, otherAccount } = await loadFixture(deployContract);
-            //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
+            const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
+            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(1), true]);
 
-            await mintAuthorToken(otherAccount.account, BigInt(1), true, mediumAccess);
+            await mediumAccess.write.mint([
+                owner.account.address,
+                tokenId,
+                BigInt(1),
+                "0x"
+            ],
+                { account: owner.account })
+
         })
 
-        it("Reader can mint a token for a free article", async function() {
+        it("Reader can mint a token for a free article", async function () {
             const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
             //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
 
-            let tokenId = await mintAuthorToken(owner.account, BigInt(1234), false, mediumAccess);
+            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(1), false]);
 
-            await mintReaderToken(otherAccount.account, tokenId, false, mediumAccess);
-            
+            await mediumAccess.write.mint([
+                owner.account.address,
+                tokenId,
+                BigInt(1),
+                "0x"
+            ],
+                { account: owner.account })
+
+
+            await mediumAccess.write.mint([
+                otherAccount.account.address,
+                tokenId,
+                BigInt(1),
+                "0x"
+            ],
+                { account: otherAccount.account, value: BigInt(0) });
+
         })
 
-        it("Reader can mint a token for a paying article", async function() {
+        it("Reader can mint a token for a paying article", async function () {
             const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
             //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
 
-            let tokenId = await mintAuthorToken(owner.account, BigInt(9942), true, mediumAccess);
+            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(1), true]);
 
-            await mintReaderToken(otherAccount.account, tokenId, true, mediumAccess);
+            await mediumAccess.write.mint([
+                owner.account.address,
+                tokenId,
+                BigInt(1),
+                "0x"
+            ],
+                { account: owner.account })
+
+            const mintPrice = await mediumAccess.read.mintPrice();
+
+            await mediumAccess.write.mint([
+                otherAccount.account.address,
+                tokenId,
+                BigInt(1),
+                "0x"
+            ],
+                { account: otherAccount.account, value: mintPrice });
+
         })
 
-        it("Reader fails to mint a token for a paying article by not providing funds", async function() {
+        it("Reader fails to mint a token for a paying article by not providing funds", async function () {
             const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
             //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
 
-            let tokenId = await mintAuthorToken(owner.account, BigInt(2121), true, mediumAccess);
+            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(1), true]);
 
-            try {
-                await mintReaderToken(otherAccount.account, tokenId, false, mediumAccess);  
-                throw ("Execution should fail");
-            } catch(err) {
-                //console.log(err)
-                //console.log(err.dir())
-                console.dir(err)
-            }
+            await mediumAccess.write.mint([
+                owner.account.address,
+                tokenId,
+                BigInt(1),
+                "0x"
+            ],
+                { account: owner.account })
+
+
+            await expect(
+                mediumAccess.write.mint([
+                    otherAccount.account.address,
+                    tokenId,
+                    BigInt(1),
+                    "0x"
+                ],
+                    { account: otherAccount.account, value: BigInt(0) })
+            ).to.be.revertedWith("InvalidFunds")
         })
     })
-
-
 })
