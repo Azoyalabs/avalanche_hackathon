@@ -3,7 +3,10 @@
     "version": "0.0.1",
     "private": true,
     "scripts": {
-        "deploy": "esrun scripts/deploy_testnet.ts"
+        "deploy": "esrun scripts/deploy_testnet.ts",
+        "mint-author": "esrun scripts/mint_author_token.ts",
+        "mint-reader": "esrun scripts/mint_reader_token.ts"
+
     },
     "dependencies": {
         "@openzeppelin/contracts": "^5.0.1"
