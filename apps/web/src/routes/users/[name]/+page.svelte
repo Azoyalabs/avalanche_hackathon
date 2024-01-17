@@ -1,11 +1,20 @@
 <script lang="ts">
 	import type { Article } from '$lib/models/article';
 	import ArticleCard from '$lib/ui/app/ArticleCard.svelte';
+<<<<<<< HEAD
 	import { getRelevantAttribute } from '$lib/utils';
 	import { LayoutLink, setLayoutContext } from './context';
 
 	// TODO: remove faker
 	export let data;
+=======
+	import AvatarGenerator from '$lib/ui/app/AvatarGenerator/AvatarGenerator.svelte';
+	import SubscriptionCard from '$lib/ui/app/SubscriptionCard.svelte';
+
+	// TODO: remove faker
+	import { faker } from '@faker-js/faker';
+
+>>>>>>> 9f81bf4 (web: add /articles/[id] page mockup, including support for generated avatars)
 	const articles: Omit<Article, 'content'>[] = [
 		{
 			title: 'Article title',

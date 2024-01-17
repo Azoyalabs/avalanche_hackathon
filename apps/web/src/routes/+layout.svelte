@@ -1,4 +1,8 @@
 <script lang="ts">
+<<<<<<< HEAD
+=======
+	import { Button } from '$lib/ui/shadcn/ui/button';
+>>>>>>> 9f81bf4 (web: add /articles/[id] page mockup, including support for generated avatars)
 	import '../app.pcss';
 	import { navigating } from '$app/stores';
 	import { Button } from '$lib/ui/shadcn/ui/button';
@@ -82,6 +86,7 @@
 
 <header class="py-3 border-b">
 	<div class="container flex items-center justify-between">
+<<<<<<< HEAD
 		<a class="flex items-center" href="/">
 			<img src="/favicon.png" alt="logo" class="w-8 h-8" />
 			<span class="ml-2 text-2xl font-black uppercase font-nunito">Summit</span>
@@ -177,11 +182,19 @@
 			{:else}
 				<Button on:click={connectToParticle}>Connect wallet</Button>
 			{/if}
+=======
+		<div class="flex items-center">
+			<img src="/favicon.png" alt="logo" class="w-8 h-8" /> <span class="ml-2 text-2xl font-black uppercase font-nunito">Summit</span>
+		</div>
+		<div>
+			<Button size="sm">Connect</Button>
+>>>>>>> 9f81bf4 (web: add /articles/[id] page mockup, including support for generated avatars)
 		</div>
 	</div>
 </header>
 
 <div class="flex-grow">
+<<<<<<< HEAD
 	{#if $navigating}
 		<div class="flex flex-col items-center justify-center min-h-screen">
 			<MountainSnow class="animate-ping duration-[2000ms]"></MountainSnow>
@@ -189,6 +202,9 @@
 	{:else}
 		<slot />
 	{/if}
+=======
+	<slot />
+>>>>>>> 9f81bf4 (web: add /articles/[id] page mockup, including support for generated avatars)
 </div>
 
 <footer class="">
