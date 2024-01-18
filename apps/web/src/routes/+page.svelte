@@ -5,7 +5,11 @@
 		PUBLIC_PARTICLE_CLIENT_KEY,
 		PUBLIC_PARTICLE_PROJECT_ID
 	} from '$env/static/public';
-	import { Ethereum, EthereumGoerli } from '@particle-network/chains';
+	//import { Ethereum, EthereumGoerli } from '@particle-network/chains';
+	import ArticleCard from '$lib/ui/app/ArticleCard.svelte';
+	
+
+	/*
 	import {
 		type Chain,
 		type ConnectConfig,
@@ -15,8 +19,6 @@
 		walletconnect
 	} from '@particle-network/connect';
 	import { onMount } from 'svelte';
-	import ArticleCard from '$lib/ui/app/ArticleCard.svelte';
-
 	const config: ConnectConfig = {
 		projectId: PUBLIC_PARTICLE_PROJECT_ID,
 		clientKey: PUBLIC_PARTICLE_CLIENT_KEY,
@@ -39,6 +41,7 @@
 	onMount(() => {
 		//connectKit.connect();
 	});
+	*/
 
 	const article = {
 		title: 'Featured Article title',

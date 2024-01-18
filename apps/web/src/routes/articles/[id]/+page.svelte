@@ -6,7 +6,7 @@
 	import * as Card from '$lib/ui/shadcn/ui/card';
 	
 	import * as Avatar from '$lib/ui/shadcn/ui/avatar';
-	import SubscriptionCard from '$lib/ui/app/SubscriptionCard.svelte';
+	import SubscriptionCard from '$lib/ui/app/SubscriptionCard/SubscriptionCard.svelte';
 
 	const markdown = `
 
