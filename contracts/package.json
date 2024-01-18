@@ -15,9 +15,11 @@
         "@nomicfoundation/hardhat-toolbox": "^4.0.0",
         "@nomicfoundation/hardhat-toolbox-viem": "^2.0.0",
         "@openzeppelin/hardhat-upgrades": "^3.0.2",
+        "chai": "^4.3.7",
         "dotenv": "^16.3.1",
         "ethereum-waffle": "^4.0.10",
         "hardhat": "^2.19.4",
+        "hardhat-toolbox-viem": "^1.0.0",
         "typescript": "^5.3.3"
     }
 }

@@ -6,13 +6,18 @@ import { expect } from "chai";
 import hre from "hardhat";
 import { getAddress, parseGwei, Account } from "viem";
 
-import '@openzeppelin/hardhat-upgrades';
+//import '@openzeppelin/hardhat-upgrades';
 
-
+/*
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
 
 chai.use(solidity);
+*/
+//import "@nomicfoundation/hardhat-chai-matchers";
+import "@nomicfoundation/hardhat-chai-matchers";
+
+import { ethers } from "hardhat";
 
 
 describe("MediumAccess", function () {
@@ -137,9 +142,10 @@ describe("MediumAccess", function () {
                 BigInt(1),
                 "0x"
             ],
-                { account: owner.account })
+                { account: owner.account }) //.to.be.revertedWith("InvalidFunds")
 
 
+            
             await expect(
                 mediumAccess.write.mint([
                     otherAccount.account.address,
@@ -148,7 +154,8 @@ describe("MediumAccess", function () {
                     "0x"
                 ],
                     { account: otherAccount.account, value: BigInt(0) })
-            ).to.be.revertedWith("InvalidFunds")
+            ).to.be.rejectedWith("InvalidFunds") //With("InvalidFunds")
+            
         })
     })
 })
