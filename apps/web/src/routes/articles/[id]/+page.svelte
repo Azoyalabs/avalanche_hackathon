@@ -6,6 +6,7 @@
 	import * as Card from '$lib/ui/shadcn/ui/card';
 	
 	import * as Avatar from '$lib/ui/shadcn/ui/avatar';
+	import SubscriptionCard from '$lib/ui/app/SubscriptionCard/SubscriptionCard.svelte';
 
 	const markdown = `
 
@@ -145,18 +146,8 @@ nequiquam arboris prope deam.`;
 	</article>
 
 	<div class="grid grid-cols-2 gap-8 not-prose">
-		<Card.Root class="col-span-2">
-			<Card.Content class="flex items-center justify-between py-4">
-				<div>
-					<h5 class="font-medium">Subscribe to {authorName}</h5>
-					<p class="text-sm text-muted-foreground">Be notified of new articles directly in your inbox</p>
-				</div>
-
-				<div class="text-sm text-right text-muted-foreground">
-					Not available on Testnet
-				</div>
-			</Card.Content>
-		</Card.Root>
+		<SubscriptionCard name={authorName}></SubscriptionCard>
+		
 
 		<Card.Root class="">
 			<Card.Header>

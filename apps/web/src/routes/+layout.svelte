@@ -1,20 +1,22 @@
 <script lang="ts">
-	import {Button} from "$lib/ui/shadcn/ui/button"
+	import { Button } from '$lib/ui/shadcn/ui/button';
 	import '../app.pcss';
 </script>
 
 <header class="py-3 border-b">
 	<div class="container flex items-center justify-between">
-		<div><img src="/favicon.png" alt="logo" class="w-8 h-8" /></div>
+		<div class="flex items-center">
+			<img src="/favicon.png" alt="logo" class="w-8 h-8" /> <span class="ml-2 text-2xl font-black uppercase font-nunito">Summit</span>
+		</div>
 		<div>
-			<Button size="sm">
-				Connect
-			</Button>
+			<Button size="sm">Connect</Button>
 		</div>
 	</div>
 </header>
 
-<slot />
+<div class="flex-grow">
+	<slot />
+</div>
 
 <footer class="">
 	<div class="px-6 py-20 mx-auto overflow-hidden max-w-7xl sm:py-24 lg:px-8">
