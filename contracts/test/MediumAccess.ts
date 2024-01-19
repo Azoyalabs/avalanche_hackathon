@@ -67,7 +67,7 @@ describe("MediumAccess", function () {
     describe("Mints", function () {
         it("Author can mint a token representing a new article", async function () {
             const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
-            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(1), true]);
+            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(0), true]);
 
             await mediumAccess.write.mint([
                 owner.account.address,
@@ -83,7 +83,7 @@ describe("MediumAccess", function () {
             const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
             //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
 
-            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(1), false]);
+            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(0), false]);
 
             await mediumAccess.write.mint([
                 owner.account.address,
@@ -108,7 +108,7 @@ describe("MediumAccess", function () {
             const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
             //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
 
-            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(1), true]);
+            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(0), true]);
 
             await mediumAccess.write.mint([
                 owner.account.address,
@@ -134,7 +134,7 @@ describe("MediumAccess", function () {
             const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
             //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
 
-            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(1), true]);
+            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(0), true]);
 
             await mediumAccess.write.mint([
                 owner.account.address,
@@ -145,7 +145,7 @@ describe("MediumAccess", function () {
                 { account: owner.account }) //.to.be.revertedWith("InvalidFunds")
 
 
-            
+
             await expect(
                 mediumAccess.write.mint([
                     otherAccount.account.address,
@@ -155,7 +155,60 @@ describe("MediumAccess", function () {
                 ],
                     { account: otherAccount.account, value: BigInt(0) })
             ).to.be.rejectedWith("InvalidFunds") //With("InvalidFunds")
-            
+
         })
+
+
+        it("Author cannot mint non-sequential token", async function () {
+            const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
+            //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
+
+            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(0), true]);
+
+            await mediumAccess.write.mint([
+                owner.account.address,
+                tokenId,
+                BigInt(1),
+                "0x"
+            ],
+                { account: owner.account })
+
+            const tokenId2 = await mediumAccess.read.createTokenId([owner.account.address, BigInt(2), true]);
+
+
+            await expect(mediumAccess.write.mint([
+                owner.account.address,
+                tokenId2,
+                BigInt(1),
+                "0x"
+            ],
+                { account: owner.account })).to.be.rejectedWith("ArticleIdNonSequential")
+        })
+        
+        
+        it("Author cannot re-mint an already existing token", async function () {
+            const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
+            //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
+
+            const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(0), true]);
+
+            await mediumAccess.write.mint([
+                owner.account.address,
+                tokenId,
+                BigInt(1),
+                "0x"
+            ],
+                { account: owner.account })
+
+            await expect(mediumAccess.write.mint([
+                owner.account.address,
+                tokenId,
+                BigInt(1),
+                "0x"
+            ],
+                { account: owner.account })).to.be.rejectedWith("ArticleIdNonSequential")
+        })
+        
+        
     })
 })
