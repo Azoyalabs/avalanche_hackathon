@@ -6,15 +6,7 @@ import { expect } from "chai";
 import hre from "hardhat";
 import { getAddress, parseGwei, Account } from "viem";
 
-//import '@openzeppelin/hardhat-upgrades';
 
-/*
-import chai from "chai";
-import { solidity } from "ethereum-waffle";
-
-chai.use(solidity);
-*/
-//import "@nomicfoundation/hardhat-chai-matchers";
 import "@nomicfoundation/hardhat-chai-matchers";
 
 import { ethers } from "hardhat";
@@ -81,7 +73,6 @@ describe("MediumAccess", function () {
 
         it("Reader can mint a token for a free article", async function () {
             const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
-            //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
 
             const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(0), false]);
 
@@ -106,7 +97,6 @@ describe("MediumAccess", function () {
 
         it("Reader can mint a token for a paying article", async function () {
             const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
-            //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
 
             const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(0), true]);
 
@@ -132,7 +122,6 @@ describe("MediumAccess", function () {
 
         it("Reader fails to mint a token for a paying article by not providing funds", async function () {
             const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
-            //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
 
             const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(0), true]);
 
@@ -161,7 +150,6 @@ describe("MediumAccess", function () {
 
         it("Author cannot mint non-sequential token", async function () {
             const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
-            //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
 
             const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(0), true]);
 
@@ -188,7 +176,6 @@ describe("MediumAccess", function () {
         
         it("Author cannot re-mint an already existing token", async function () {
             const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
-            //const tokenId = await mediumAccess.read.createTokenId([otherAccount.account.address, BigInt(1), true]);            
 
             const tokenId = await mediumAccess.read.createTokenId([owner.account.address, BigInt(0), true]);
 
