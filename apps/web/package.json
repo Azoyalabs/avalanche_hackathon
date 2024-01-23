@@ -71,6 +71,7 @@
     "bits-ui": "^0.14.0",
     "clsx": "^2.1.0",
     "cmdk-sv": "^0.0.13",
+    "easymde": "^2.18.0",
     "formsnap": "^0.4.2",
     "lucide-svelte": "^0.309.0",
     "mode-watcher": "^0.1.2",
