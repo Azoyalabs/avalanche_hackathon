@@ -4,7 +4,7 @@ import {
 } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { expect } from "chai";
 import hre from "hardhat";
-import { getAddress, parseGwei, Account } from "viem";
+// import { getAddress, parseGwei, Account } from "viem";
 
 
 import "@nomicfoundation/hardhat-chai-matchers";
@@ -16,8 +16,12 @@ describe("MediumAccess", function () {
     async function deployContract() {
         const [owner, otherAccount] = await hre.viem.getWalletClients();
 
+        
         const mediumAccess = await hre.viem.deployContract("MediumAccess", [owner.account.address, BigInt(100)], {
         });
+        
+
+        //const mediumAccess = await hre.viem.deployContract<"MediumAccess">("MediumAccess", [owner.account.address, BigInt(100)]); 
 
         const publicClient = await hre.viem.getPublicClient();
 
