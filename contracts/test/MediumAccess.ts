@@ -1,27 +1,25 @@
+
 import {
     time,
     loadFixture,
 } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
+
+
 import { expect } from "chai";
 import hre from "hardhat";
 // import { getAddress, parseGwei, Account } from "viem";
 
 
-import "@nomicfoundation/hardhat-chai-matchers";
-
-import { ethers } from "hardhat";
+//import "@nomicfoundation/hardhat-chai-matchers";
 
 
 describe("MediumAccess", function () {
     async function deployContract() {
         const [owner, otherAccount] = await hre.viem.getWalletClients();
 
-        
         const mediumAccess = await hre.viem.deployContract("MediumAccess", [owner.account.address, BigInt(100)], {
         });
         
-
-        //const mediumAccess = await hre.viem.deployContract<"MediumAccess">("MediumAccess", [owner.account.address, BigInt(100)]); 
 
         const publicClient = await hre.viem.getPublicClient();
 
@@ -37,7 +35,6 @@ describe("MediumAccess", function () {
     describe("Deployment", function () {
         it("Should deploy the contract with no issues", async function () {
             const { mediumAccess, owner } = await loadFixture(deployContract);
-
             expect((await mediumAccess.read.owner()).toLowerCase()).to.equal(owner.account.address);
         })
     })
@@ -69,8 +66,8 @@ describe("MediumAccess", function () {
                 owner.account.address,
                 tokenId,
                 BigInt(1),
-                "0x"
-            ],
+                "0x"]
+                ,
                 { account: owner.account })
 
         })
@@ -84,8 +81,8 @@ describe("MediumAccess", function () {
                 owner.account.address,
                 tokenId,
                 BigInt(1),
-                "0x"
-            ],
+                "0x"]
+                ,
                 { account: owner.account })
 
 
@@ -93,8 +90,8 @@ describe("MediumAccess", function () {
                 otherAccount.account.address,
                 tokenId,
                 BigInt(1),
-                "0x"
-            ],
+                "0x"]
+                ,
                 { account: otherAccount.account, value: BigInt(0) });
 
         })
@@ -108,8 +105,8 @@ describe("MediumAccess", function () {
                 owner.account.address,
                 tokenId,
                 BigInt(1),
-                "0x"
-            ],
+                "0x"]
+                ,
                 { account: owner.account })
 
             const mintPrice = await mediumAccess.read.mintPrice();
@@ -118,8 +115,8 @@ describe("MediumAccess", function () {
                 otherAccount.account.address,
                 tokenId,
                 BigInt(1),
-                "0x"
-            ],
+                "0x"]
+                ,
                 { account: otherAccount.account, value: mintPrice });
 
         })
@@ -133,8 +130,8 @@ describe("MediumAccess", function () {
                 owner.account.address,
                 tokenId,
                 BigInt(1),
-                "0x"
-            ],
+                "0x"]
+                ,
                 { account: owner.account }) //.to.be.revertedWith("InvalidFunds")
 
 
@@ -144,8 +141,8 @@ describe("MediumAccess", function () {
                     otherAccount.account.address,
                     tokenId,
                     BigInt(1),
-                    "0x"
-                ],
+                    "0x"]
+                    ,
                     { account: otherAccount.account, value: BigInt(0) })
             ).to.be.rejectedWith("InvalidFunds") //With("InvalidFunds")
 
@@ -161,8 +158,8 @@ describe("MediumAccess", function () {
                 owner.account.address,
                 tokenId,
                 BigInt(1),
-                "0x"
-            ],
+                "0x"]
+                ,
                 { account: owner.account })
 
             const tokenId2 = await mediumAccess.read.createTokenId([owner.account.address, BigInt(2), true]);
@@ -172,12 +169,12 @@ describe("MediumAccess", function () {
                 owner.account.address,
                 tokenId2,
                 BigInt(1),
-                "0x"
-            ],
+                "0x"]
+                ,
                 { account: owner.account })).to.be.rejectedWith("ArticleIdNonSequential")
         })
-        
-        
+
+
         it("Author cannot re-mint an already existing token", async function () {
             const { mediumAccess, owner, otherAccount } = await loadFixture(deployContract);
 
@@ -187,19 +184,17 @@ describe("MediumAccess", function () {
                 owner.account.address,
                 tokenId,
                 BigInt(1),
-                "0x"
-            ],
+                "0x"]
+                ,
                 { account: owner.account })
 
             await expect(mediumAccess.write.mint([
                 owner.account.address,
                 tokenId,
                 BigInt(1),
-                "0x"
-            ],
+                "0x"]
+                ,
                 { account: owner.account })).to.be.rejectedWith("ArticleIdNonSequential")
         })
-        
-        
     })
 })

@@ -10,14 +10,20 @@ import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.s
 import "./MediumAccess.sol";
 
 /*
+    Have the Summit contract implement CCIPTokenAndDataReceiver 
+
+*/
 contract CCIPTokenAndDataReceiver is CCIPReceiver, OwnerIsCreator {
-    MediumAccess public nft;
+    MediumAccess public target;
     uint256 price;
     
+    address public paymentToken;
+
     event MintCallSuccessfull();
     
-    constructor(address router, uint256 _price) CCIPReceiver(router) {
-        nft = new MediumAccess();
+    constructor(address router, address _target, address _paymentToken, uint256 _price) CCIPReceiver(router) {
+        target = MediumAccess(_target); //new MediumAccess();
+        paymentToken = _paymentToken;
         price = _price;
     }
     
@@ -28,9 +34,12 @@ contract CCIPTokenAndDataReceiver is CCIPReceiver, OwnerIsCreator {
         override 
     {
         require(message.destTokenAmounts[0].amount >= price, "Not enough CCIP-BnM for mint");
-        (bool success, ) = address(nft).call(message.data);
+        require(message.destTokenAmounts[0].token == paymentToken, "Invalid Denomination for payment");
+        (bool success, ) = address(target).call(message.data);
         require(success);
         emit MintCallSuccessfull();
     }
+    
+        
+
 }
-*/

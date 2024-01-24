@@ -1,8 +1,8 @@
 import { HardhatUserConfig } from "hardhat/config";
+//import "@nomicfoundation/hardhat-toolbox-viem";
 import "@nomicfoundation/hardhat-toolbox-viem";
 
-import '@nomicfoundation/hardhat-toolbox';
-import "@nomicfoundation/hardhat-chai-matchers";
+//import '@nomicfoundation/hardhat-toolbox';
 //import '@openzeppelin/hardhat-upgrades';
 
 
@@ -15,8 +15,8 @@ const config: HardhatUserConfig = {
   },
   paths: {
     sources: "./contracts"
-  }
-  
+  },
+  defaultNetwork: "hardhat"
 };
 
 export default config;
