@@ -7,9 +7,11 @@
 	onMount(() => {
 		const easyMDE = new EasyMDE({ element: document.getElementById(id)!, minHeight: '400px' });
 
-		
 		return () => easyMDE.cleanup();
 	});
 </script>
 
 <textarea {id} class="border border-red-500 font-nunito"></textarea>
+
+<style>
+</style>
