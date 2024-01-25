@@ -71,6 +71,16 @@ describe("Summit", function () {
         })
     })
 
+
+    describe("Utils", function() {
+        it("Id should be matching", async function() {
+
+
+        })
+
+
+    })
+
     describe("Receiver", function () {
         it("Receiver should reject payment from non-target token", async function () {
             const { bnmToken, summit, summitReceiver, articleWriter, contractOwner, userLambda } = await loadFixture(deployContracts);
@@ -103,8 +113,6 @@ describe("Summit", function () {
                 }
             )).to.be.rejectedWith("Unauthorized");
 
-
-
         })
 
     })
@@ -127,14 +135,14 @@ describe("Summit", function () {
             })
         })
 
-
+        /*
         describe("TransferAndCall - ERC677-based workflow", function() {
             it("Writer can create a new free article", async function () {
                 throw "Not implemented - Need to check for general message passing in this case"
 
             })
         })
-
+        */
 
 
 
