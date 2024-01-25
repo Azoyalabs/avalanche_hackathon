@@ -110,7 +110,7 @@ contract SummitReceiver is CCIPReceiver, OwnerIsCreator, IERC677Receiver {
         uint256 amount,
         bytes calldata data
     ) external {
-        require(msg.sender != paymentToken, "Unauthorized");
+        require(msg.sender == paymentToken, "Unauthorized");
 
         target.mintErc20(
             sender,
