@@ -8,10 +8,21 @@ import "@nomicfoundation/hardhat-toolbox-viem";
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.22",
-    settings: {
-      evmVersion: "paris"
-    }
+    compilers: [
+      {
+        version: "0.8.22",
+        settings: {
+          evmVersion: "paris"
+        }
+      },
+      {
+        version: "0.8.19",
+        settings: {
+          evmVersion: "paris"
+        }
+      }
+
+    ]
   },
   paths: {
     sources: "./contracts"

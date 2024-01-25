@@ -7,10 +7,7 @@ import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import {IERC677Receiver} from "@chainlink/contracts-ccip/src/v0.8/shared/token/ERC677/IERC677Receiver.sol";
 
-
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-import "./interfaces/ISummitMinter.sol";
 
 //import "./MediumAccess.sol";
 import "./Summit.sol";
@@ -21,7 +18,6 @@ import "./Summit.sol";
 */
 contract SummitReceiver is CCIPReceiver, OwnerIsCreator, IERC677Receiver {
     Summit public target;
-    uint256 price;
 
     address public paymentToken;
 
@@ -30,12 +26,10 @@ contract SummitReceiver is CCIPReceiver, OwnerIsCreator, IERC677Receiver {
     constructor(
         address router,
         address _target,
-        address _paymentToken,
-        uint256 _price
+        address _paymentToken
     ) CCIPReceiver(router) {
         target = Summit(_target); //new MediumAccess();
         paymentToken = _paymentToken;
-        price = _price;
     }
 
     /*
@@ -55,6 +49,10 @@ contract SummitReceiver is CCIPReceiver, OwnerIsCreator, IERC677Receiver {
         emit MintCallSuccessfull();
     }
     */
+
+    function updateTarget(address _newTarget) external {
+        target = Summit(_newTarget);
+    }
 
     function _ccipReceive(
         Client.Any2EVMMessage memory message

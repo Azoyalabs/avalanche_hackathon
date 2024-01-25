@@ -13,13 +13,7 @@ import "./PaymentAggregator.sol";
 import "./IdTracker.sol";
 import "./TokenUtils.sol";
 
-contract Summit is
-    ERC1155,
-    Ownable,
-    PaymentAggregator,
-    IdTracker,
-    TokenUtils
-{
+contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils {
     uint256 constant MAX_ARTICLE_ID = 1 << (96 - 1);
 
     uint256 public mintPrice;
@@ -72,8 +66,8 @@ contract Summit is
             tokenId
         );
 
-        // need IERC1155-supply here, to check if it's a preexisting article? 
-        // definitely can simplify tracking 
+        // need IERC1155-supply here, to check if it's a preexisting article?
+        // definitely can simplify tracking
 
         // first branch: minter is a match with creator
         if (creator == minter) {
@@ -82,7 +76,7 @@ contract Summit is
                 revert ArticleIdNonSequential(articleId, idTracker[creator]);
             }
 
-            // it's valid, mint to author 
+            // it's valid, mint to author
             incrementTrackedId(creator);
             _mint(minter, tokenId, 1, new bytes(0));
         } else {
@@ -96,7 +90,6 @@ contract Summit is
                 }
 
                 _mint(minter, tokenId, 1, new bytes(0));
-
             } else {
                 // free article, the user is supporting the author here
                 aggregated[creator] += paymentAmount;
@@ -107,6 +100,7 @@ contract Summit is
 
     // use data to provide a signature? nah can leave it open for a PoC tbh
     // use id to route logic
+    /*
     function mint(
         address account,
         uint256 id,
@@ -147,6 +141,7 @@ contract Summit is
 
         _mint(account, id, amount, data);
     }
+    */
 
     // what do i do with mint batch? need safety like normal "mint" method
     // just remove it I guess
@@ -160,5 +155,4 @@ contract Summit is
         _mintBatch(to, ids, amounts, data);
     }
     */
-    
 }
