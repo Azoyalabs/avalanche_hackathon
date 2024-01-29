@@ -481,7 +481,7 @@ describe("Summit", function () {
                     {
                         account: articleReader.account
                     }
-                )).to.be.rejected;
+                )).to.be.rejectedWith("NoArticlesByAuthor");
             })
 
             it("Reader fails to mint non-existing paying article with id 0 from unknown author", async function () {
@@ -508,7 +508,7 @@ describe("Summit", function () {
                     {
                         account: articleReader.account
                     }
-                )).to.be.rejected;
+                )).to.be.rejectedWith("NoArticlesByAuthor");
             })
 
             it("Reader fails to mint non-existing free article with id non-0 from known author", async function () {
@@ -552,7 +552,7 @@ describe("Summit", function () {
                     {
                         account: articleReader.account
                     }
-                )).to.be.rejected;
+                )).to.be.rejectedWith("ArticleIdNotExist");
             })
             
             it("Reader fails to mint non-existing paying article with id non-0 from known author", async function () {
@@ -596,12 +596,12 @@ describe("Summit", function () {
                     {
                         account: articleReader.account
                     }
-                )).to.be.rejected;
+                )).to.be.rejectedWith("ArticleIdNotExist");
             })
 
             it("Reader fails to mint existing paying article with non-paying token id", async function () {
                 const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
-
+                
                 // set role for minting 
                 await bnmToken.write.grantMintRole([contractOwner.account.address]);
                 // mint tokens 
@@ -640,7 +640,7 @@ describe("Summit", function () {
                     {
                         account: articleReader.account
                     }
-                )).to.be.rejected;
+                )).to.be.rejectedWith("TokenIdNotExist");
             })
         })
     })

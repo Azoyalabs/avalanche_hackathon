@@ -46,6 +46,10 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils {
     error ArticleIdTooBig(uint maxId, uint requestedId);
     error ArticleIdNonSequential(uint invalidArticleId, uint requiredArticleId);
 
+    error TokenIdNotExist(uint requestedTokenId);
+    error ArticleIdNotExist(uint requested, uint maxAvailable);
+    error NoArticlesByAuthor(address author);
+
     /*
         No need for amount, only minting one by one tbh
         Also restrict to mint to self 
@@ -81,7 +85,23 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils {
             _mint(minter, tokenId, 1, new bytes(0));
         } else {
             // a common user is minting a token for an article
-            // if it's an article with paid access,
+            // check if the article actually exists
+            if (idTracker[creator] == 0) {
+                revert NoArticlesByAuthor(creator);                
+            }
+
+            if (articleId >= idTracker[creator]) {
+                revert ArticleIdNotExist(articleId, idTracker[creator] - 1);
+                
+            }
+
+            // need to check if is minting the right isPaying type of article 
+            // can just check balance of author? really need to go through ERC-1155 supply 
+            if (balanceOf(creator, tokenId) == 0) {
+                revert TokenIdNotExist(tokenId);
+            }
+
+            // if it's an article with paid access
             if (isPaying) {
                 if (paymentAmount != mintPrice) {
                     revert InvalidFunds(paymentAmount, mintPrice);
@@ -97,51 +117,6 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils {
             }
         }
     }
-
-    // use data to provide a signature? nah can leave it open for a PoC tbh
-    // use id to route logic
-    /*
-    function mint(
-        address account,
-        uint256 id,
-        uint256 amount,
-        bytes memory data
-    ) public payable {
-        if (amount != 1) {
-            //revert("Invalid amount to mint");
-            revert OnlyMintOne();
-        }
-
-        (address creator, uint articleId, bool isPaying) = parseTokenId(id);
-        if (articleId >= MAX_ARTICLE_ID) {
-            revert ArticleIdTooBig(MAX_ARTICLE_ID, articleId);
-        }
-
-        if (creator != msg.sender) {
-            if (ERC1155.balanceOf(account, id) > 0) {
-                //revert("Already owned");
-                revert AlreadyOwned(account, id);
-            }
-
-            if (isPaying && msg.value != mintPrice) {
-                //revert("Invalid Funds");
-                revert InvalidFunds(msg.value, mintPrice);
-            } else {
-                aggregated[creator] += msg.value;
-            }
-        } else {
-            // perform checks on id of article
-            if (!isValidId(creator, articleId)) {
-                revert ArticleIdNonSequential(articleId, idTracker[creator]);
-                //revert("Invalid Token Id");
-            } else {
-                incrementTrackedId(creator);
-            }
-        }
-
-        _mint(account, id, amount, data);
-    }
-    */
 
     // what do i do with mint batch? need safety like normal "mint" method
     // just remove it I guess
