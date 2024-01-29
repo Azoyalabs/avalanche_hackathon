@@ -2,8 +2,9 @@ name: Hardhat Test
 run-name: Running Hardhat tests
 on:
   push:
-    paths: 
-      - "contracts/**"
+    branches: 
+      - "contracts"
+      - "contracts_router"
 
 jobs:
   build:
