@@ -72,9 +72,23 @@ describe("Summit", function () {
     })
 
 
-    describe("Utils", function() {
-        it("Id should be matching", async function() {
+    describe("Utils", function () {
+        it("Id should be matching", async function () {
+            const { bnmToken, summit, summitReceiver, articleWriter, contractOwner, userLambda } = await loadFixture(deployContracts);
 
+
+            [articleWriter.account.address, contractOwner.account.address, userLambda.account.address].forEach((addr) => {
+                [BigInt(0), BigInt(10), BigInt(4684)].forEach((articleId) => {
+                    [false, true].forEach(async (isPaying) => {
+                        let tokenId = await summit.read.createTokenId([addr, articleId, isPaying]);
+                        let [parsedAddress, parsedArticleId, parsedIsPaying] = await summit.read.parseTokenId([tokenId]);
+                        expect(addr).to.eq(parsedAddress.toLowerCase());
+                        expect(articleId).to.eq(parsedArticleId)
+                        expect(isPaying).to.eq(parsedIsPaying);
+                    })
+                })
+
+            })
 
         })
 
@@ -118,15 +132,15 @@ describe("Summit", function () {
     })
 
     describe("Minting", function () {
-        describe("Direct Payment - Approval-based workflow", function() {
+        describe("Direct Payment - Approval-based workflow", function () {
             it("Writer can create a new free article", async function () {
                 const { summit, bnmToken, summitReceiver, contractOwner, articleWriter } = await loadFixture(deployContracts);
-    
+
                 // create token ID for a non paying article
                 const tokenId = await summit.read.createTokenId(
                     [articleWriter.account.address, BigInt(0), false]
                 );
-    
+
                 // call receiver to mint the token
                 await summitReceiver.write.directPayment(
                     [tokenId, BigInt(0), "0x"],
