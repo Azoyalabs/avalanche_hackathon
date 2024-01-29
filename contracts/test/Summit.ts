@@ -642,6 +642,51 @@ describe("Summit", function () {
                     }
                 )).to.be.rejectedWith("TokenIdNotExist");
             })
+
+            
+            it("Reader fails to mint existing free article with paying token id", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
+                
+                // set role for minting 
+                await bnmToken.write.grantMintRole([contractOwner.account.address]);
+                // mint tokens 
+                await bnmToken.write.mint([articleReader.account.address, BigInt(500)]);
+
+                //const articlePrice = await summit.read.mintPrice();
+
+                // direct payment endpoint will call target token, so here we try with the transferAndCall 
+                // create tokenId for minting 
+                const tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), false]
+                );
+
+                // create the article 
+                await bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                );
+                
+
+                const invalidTokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), true]
+                );
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(invalidTokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                )).to.be.rejectedWith("TokenIdNotExist");
+            })
         })
     })
 })
