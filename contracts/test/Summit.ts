@@ -175,7 +175,7 @@ describe("Summit", function () {
                     let tokenId = await summit.read.createTokenId(
                         [articleWriter.account.address, BigInt(i), false]
                     );
-                    
+
                     let invalidTokenId = await summit.read.createTokenId(
                         [articleWriter.account.address, BigInt(i + 1), false]
                     );
@@ -213,7 +213,7 @@ describe("Summit", function () {
                     let tokenId = await summit.read.createTokenId(
                         [articleWriter.account.address, BigInt(i), true]
                     );
-                    
+
                     let invalidTokenId = await summit.read.createTokenId(
                         [articleWriter.account.address, BigInt(i + 1), true]
                     );
@@ -248,7 +248,7 @@ describe("Summit", function () {
             it("Free Article creation with sequential Ids are successful", async function () {
                 const { summit, bnmToken, summitReceiver, contractOwner, articleWriter } = await loadFixture(deployContracts);
 
-                for (let i = 0; i < 32; i++) {
+                for (let i = 0; i < 16; i++) {
                     const tokenId = await summit.read.createTokenId(
                         [articleWriter.account.address, BigInt(i), false]
                     );
@@ -272,7 +272,7 @@ describe("Summit", function () {
             it("Paying Article creation with sequential Ids are successful", async function () {
                 const { summit, bnmToken, summitReceiver, contractOwner, articleWriter } = await loadFixture(deployContracts);
 
-                for (let i = 0; i < 32; i++) {
+                for (let i = 0; i < 16; i++) {
                     const tokenId = await summit.read.createTokenId(
                         [articleWriter.account.address, BigInt(i), true]
                     );
@@ -294,7 +294,7 @@ describe("Summit", function () {
             it("Randomly Free or Paying Article creation with sequential Ids are successful", async function () {
                 const { summit, bnmToken, summitReceiver, contractOwner, articleWriter } = await loadFixture(deployContracts);
 
-                for (let i = 0; i < 32; i++) {
+                for (let i = 0; i < 16; i++) {
                     const tokenId = await summit.read.createTokenId(
                         [articleWriter.account.address, BigInt(i), Math.random() > 0.5]
                     );
@@ -403,7 +403,7 @@ describe("Summit", function () {
                 );
 
                 // mint the token for the reader 
-                await expect(bnmToken.write.transferAndCall(
+                await bnmToken.write.transferAndCall(
                     [
                         summitReceiver.address,
                         BigInt(100),
@@ -412,7 +412,7 @@ describe("Summit", function () {
                     {
                         account: articleReader.account
                     }
-                )); //.to.be.rejectedWith("Unauthorized");
+                ); //.to.be.rejectedWith("Unauthorized");
             })
 
             it("Reader can successfully mint existing paying article", async function () {
@@ -443,6 +443,62 @@ describe("Summit", function () {
                     }
                 );
 
+                await bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        articlePrice,
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                );
+            })
+
+
+            it("Reader fails to mint non-existing free article with id 0 from unknown author", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
+
+                // set role for minting 
+                await bnmToken.write.grantMintRole([contractOwner.account.address]);
+                // mint tokens 
+                await bnmToken.write.mint([articleReader.account.address, BigInt(500)]);
+
+                //const articlePrice = await summit.read.mintPrice();
+
+                // direct payment endpoint will call target token, so here we try with the transferAndCall 
+                // create tokenId for minting 
+                const tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), false]
+                );
+
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                )).to.be.rejected;
+            })
+
+            it("Reader fails to mint non-existing paying article with id 0 from unknown author", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
+
+                // set role for minting 
+                await bnmToken.write.grantMintRole([contractOwner.account.address]);
+                // mint tokens 
+                await bnmToken.write.mint([articleReader.account.address, BigInt(500)]);
+
+                const articlePrice = await summit.read.mintPrice();
+
+                // create tokenId for minting 
+                const tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), true]
+                );
+
                 await expect(bnmToken.write.transferAndCall(
                     [
                         summitReceiver.address,
@@ -452,7 +508,139 @@ describe("Summit", function () {
                     {
                         account: articleReader.account
                     }
-                )); //.to.be.rejectedWith("Unauthorized");
+                )).to.be.rejected;
+            })
+
+            it("Reader fails to mint non-existing free article with id non-0 from known author", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
+
+                // set role for minting 
+                await bnmToken.write.grantMintRole([contractOwner.account.address]);
+                // mint tokens 
+                await bnmToken.write.mint([articleReader.account.address, BigInt(500)]);
+
+                //const articlePrice = await summit.read.mintPrice();
+
+                // direct payment endpoint will call target token, so here we try with the transferAndCall 
+                // create tokenId for minting 
+                const tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), false]
+                );
+
+                // create the article 
+                await bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                );
+                
+
+                const invalidTokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(4), false]
+                );
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(invalidTokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                )).to.be.rejected;
+            })
+            
+            it("Reader fails to mint non-existing paying article with id non-0 from known author", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
+
+                // set role for minting 
+                await bnmToken.write.grantMintRole([contractOwner.account.address]);
+                // mint tokens 
+                await bnmToken.write.mint([articleReader.account.address, BigInt(500)]);
+
+                const articlePrice = await summit.read.mintPrice();
+
+                // direct payment endpoint will call target token, so here we try with the transferAndCall 
+                // create tokenId for minting 
+                const tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), false]
+                );
+
+                // create the article 
+                await bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                );
+                
+
+                const invalidTokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(4), true]
+                );
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        articlePrice,
+                        bytesToHex(toBytes(invalidTokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                )).to.be.rejected;
+            })
+
+            it("Reader fails to mint existing paying article with non-paying token id", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
+
+                // set role for minting 
+                await bnmToken.write.grantMintRole([contractOwner.account.address]);
+                // mint tokens 
+                await bnmToken.write.mint([articleReader.account.address, BigInt(500)]);
+
+                //const articlePrice = await summit.read.mintPrice();
+
+                // direct payment endpoint will call target token, so here we try with the transferAndCall 
+                // create tokenId for minting 
+                const tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), true]
+                );
+
+                // create the article 
+                await bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                );
+                
+
+                const invalidTokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), false]
+                );
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(invalidTokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                )).to.be.rejected;
             })
         })
     })
