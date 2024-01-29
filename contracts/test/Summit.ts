@@ -129,6 +129,192 @@ describe("Summit", function () {
     })
 
     describe("Minting", function () {
+        describe("Minting Id Validation", function () {
+            it("Initial article mint must have articleId == 0", async function () {
+                const { summit, bnmToken, summitReceiver, contractOwner, articleWriter } = await loadFixture(deployContracts);
+
+                // try with free article 
+                let tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(2), false]
+                );
+
+                // create the article 
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                )).to.be.rejectedWith("ArticleIdNonSequential");
+
+                // try with paying article 
+                tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(2), true]
+                );
+
+                // create the article 
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                )).to.be.rejectedWith("ArticleIdNonSequential");
+            })
+
+            it("Creation of free article must have sequential article IDs", async function () {
+                const { summit, bnmToken, summitReceiver, contractOwner, articleWriter } = await loadFixture(deployContracts);
+
+                for (let i = 0; i < 6; i++) {
+                    let tokenId = await summit.read.createTokenId(
+                        [articleWriter.account.address, BigInt(i), false]
+                    );
+                    
+                    let invalidTokenId = await summit.read.createTokenId(
+                        [articleWriter.account.address, BigInt(i + 1), false]
+                    );
+
+                    // try create article for i + 1
+                    await expect(bnmToken.write.transferAndCall(
+                        [
+                            summitReceiver.address,
+                            BigInt(0),
+                            bytesToHex(toBytes(invalidTokenId))
+                        ],
+                        {
+                            account: articleWriter.account
+                        }
+                    )).to.be.rejectedWith("ArticleIdNonSequential");
+
+                    // create the article for i 
+                    await bnmToken.write.transferAndCall(
+                        [
+                            summitReceiver.address,
+                            BigInt(0),
+                            bytesToHex(toBytes(tokenId))
+                        ],
+                        {
+                            account: articleWriter.account
+                        }
+                    );
+                }
+            })
+
+            it("Creation of paying article must have sequential article IDs", async function () {
+                const { summit, bnmToken, summitReceiver, contractOwner, articleWriter } = await loadFixture(deployContracts);
+
+                for (let i = 0; i < 6; i++) {
+                    let tokenId = await summit.read.createTokenId(
+                        [articleWriter.account.address, BigInt(i), true]
+                    );
+                    
+                    let invalidTokenId = await summit.read.createTokenId(
+                        [articleWriter.account.address, BigInt(i + 1), true]
+                    );
+
+                    // try create article for i + 1
+                    await expect(bnmToken.write.transferAndCall(
+                        [
+                            summitReceiver.address,
+                            BigInt(0),
+                            bytesToHex(toBytes(invalidTokenId))
+                        ],
+                        {
+                            account: articleWriter.account
+                        }
+                    )).to.be.rejectedWith("ArticleIdNonSequential");
+
+                    // create the article for i 
+                    await bnmToken.write.transferAndCall(
+                        [
+                            summitReceiver.address,
+                            BigInt(0),
+                            bytesToHex(toBytes(tokenId))
+                        ],
+                        {
+                            account: articleWriter.account
+                        }
+                    );
+                }
+            })
+
+
+            it("Free Article creation with sequential Ids are successful", async function () {
+                const { summit, bnmToken, summitReceiver, contractOwner, articleWriter } = await loadFixture(deployContracts);
+
+                for (let i = 0; i < 32; i++) {
+                    const tokenId = await summit.read.createTokenId(
+                        [articleWriter.account.address, BigInt(i), false]
+                    );
+
+                    // create the article 
+                    await bnmToken.write.transferAndCall(
+                        [
+                            summitReceiver.address,
+                            BigInt(0),
+                            bytesToHex(toBytes(tokenId))
+                        ],
+                        {
+                            account: articleWriter.account
+                        }
+                    );
+                }
+            })
+
+
+
+            it("Paying Article creation with sequential Ids are successful", async function () {
+                const { summit, bnmToken, summitReceiver, contractOwner, articleWriter } = await loadFixture(deployContracts);
+
+                for (let i = 0; i < 32; i++) {
+                    const tokenId = await summit.read.createTokenId(
+                        [articleWriter.account.address, BigInt(i), true]
+                    );
+
+                    // create the article 
+                    await bnmToken.write.transferAndCall(
+                        [
+                            summitReceiver.address,
+                            BigInt(0),
+                            bytesToHex(toBytes(tokenId))
+                        ],
+                        {
+                            account: articleWriter.account
+                        }
+                    );
+                }
+            })
+
+            it("Randomly Free or Paying Article creation with sequential Ids are successful", async function () {
+                const { summit, bnmToken, summitReceiver, contractOwner, articleWriter } = await loadFixture(deployContracts);
+
+                for (let i = 0; i < 32; i++) {
+                    const tokenId = await summit.read.createTokenId(
+                        [articleWriter.account.address, BigInt(i), Math.random() > 0.5]
+                    );
+
+                    // create the article 
+                    await bnmToken.write.transferAndCall(
+                        [
+                            summitReceiver.address,
+                            BigInt(0),
+                            bytesToHex(toBytes(tokenId))
+                        ],
+                        {
+                            account: articleWriter.account
+                        }
+                    );
+                }
+            })
+
+        })
+
         describe("Direct Payment - Approval-based workflow", function () {
             it("Writer can create a new free article", async function () {
                 const { summit, bnmToken, summitReceiver, contractOwner, articleWriter } = await loadFixture(deployContracts);
