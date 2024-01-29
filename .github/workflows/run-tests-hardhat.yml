@@ -23,9 +23,7 @@ jobs:
           npm install -g pnpm@8.6.2
           pnpm install
 
-      - name: Set contracts as cwd 
-        run: cd contracts
-        
       - name: Run Hardhat tests
+        working-directory: ./contracts
         run: |
           npx hardhat test
