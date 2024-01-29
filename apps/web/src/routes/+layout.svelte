@@ -1,21 +1,33 @@
 <script lang="ts">
+	import { navigating } from '$app/stores';
 	import { Button } from '$lib/ui/shadcn/ui/button';
+	import { Toaster } from '$lib/ui/shadcn/ui/sonner';
+	import { MountainSnow, Shell } from 'lucide-svelte';
+
 	import '../app.pcss';
 </script>
 
 <header class="py-3 border-b">
 	<div class="container flex items-center justify-between">
-		<div class="flex items-center">
-			<img src="/favicon.png" alt="logo" class="w-8 h-8" /> <span class="ml-2 text-2xl font-black uppercase font-nunito">Summit</span>
-		</div>
+		<a class="flex items-center" href="/">
+			<img src="/favicon.png" alt="logo" class="w-8 h-8" />
+			<span class="ml-2 text-2xl font-black uppercase font-nunito">Summit</span>
+		</a>
 		<div>
 			<Button size="sm">Connect</Button>
 		</div>
 	</div>
 </header>
+<Toaster />
 
 <div class="flex-grow">
-	<slot />
+	{#if $navigating}
+		<div class="flex flex-col items-center justify-center min-h-screen">
+			<MountainSnow class="animate-ping duration-[2000ms]"></MountainSnow>
+		</div>
+	{:else}
+		<slot />
+	{/if}
 </div>
 
 <footer class="">

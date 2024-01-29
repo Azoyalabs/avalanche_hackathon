@@ -4,11 +4,36 @@
 	import { Button, buttonVariants } from '$lib/ui/shadcn/ui/button';
 	import * as Dialog from '$lib/ui/shadcn/ui/dialog';
 	import * as Card from '$lib/ui/shadcn/ui/card';
-	
+
 	import * as Avatar from '$lib/ui/shadcn/ui/avatar';
 	import SubscriptionCard from '$lib/ui/app/SubscriptionCard/SubscriptionCard.svelte';
+	import SupportModal from '$lib/ui/app/SupportModal/SupportModal.svelte';
+	import { toast } from 'svelte-sonner';
+	import { APP_LINKS } from '$lib/links.js';
 
 	export let data;
+
+	let showSupportModal = false;
+
+	const promiser = () =>
+		toast.promise<{ name: string }>(
+			new Promise((resolve, reject) =>
+				setTimeout(() => {
+					if (Math.random() > 0.5) {
+						resolve({ name: 'Svelte Sonner' });
+					} else {
+						reject();
+					}
+				}, 1500)
+			),
+			{
+				loading: 'Loading...',
+				success: (data) => {
+					return data.name + ' toast has been added';
+				},
+				error: 'Error... :( Try again!'
+			}
+		);
 </script>
 
 <div
@@ -23,18 +48,20 @@
 		<h1 class="mt-10">The State of Expansive Communities on Farcaster</h1>
 		<div class="flex items-center justify-between mt-6 not-prose">
 			<div class="flex items-center">
-				<Avatar.Root class="border">
-					<Avatar.Image src={data.article.author.avatar} alt={data.article.author.name} />
-					<Avatar.Fallback
-						>{data.article.author.name
-							.split(' ')
-							.map((chars) => chars[0])
-							.join()}
-					</Avatar.Fallback>
-				</Avatar.Root>
-				<span class="ml-2 text-muted-foreground">
-					{data.article.author.name}
-				</span>
+				<a href={APP_LINKS.USER_PROFILE(data.article.author.name)} class="flex items-center group">
+					<Avatar.Root class="border">
+						<Avatar.Image src={data.article.author.avatar} alt={data.article.author.name} />
+						<Avatar.Fallback
+							>{data.article.author.name
+								.split(' ')
+								.map((chars) => chars[0])
+								.join()}
+						</Avatar.Fallback>
+					</Avatar.Root>
+					<span class="ml-2 text-muted-foreground group-hover:text-foreground">
+						{data.article.author.name}
+					</span>
+				</a>
 			</div>
 			<div class="flex items-center space-x-3">
 				<div class="flex items-center">
@@ -51,19 +78,16 @@
 						</Avatar.Root>
 					{/each}
 				</div>
-				<Dialog.Root>
-					<Dialog.Trigger class={buttonVariants({ variant: 'default', size: 'sm' })}
-						>Support</Dialog.Trigger
-					>
-					<Dialog.Content>
-						<Dialog.Header>
-							<Dialog.Title>Are you sure absolutely sure?</Dialog.Title>
-							<Dialog.Description>
-								This action cannot be undone. This will permanently delete your account and remove
-								your data from our servers.
-							</Dialog.Description>
-						</Dialog.Header>
-					</Dialog.Content>
+				<Dialog.Root bind:open={showSupportModal}>
+					<Dialog.Trigger class={buttonVariants({ variant: 'default', size: 'sm' })}>
+						Support
+					</Dialog.Trigger>
+					<SupportModal
+						on:click={() => {
+							showSupportModal = false;
+							promiser();
+						}}
+					></SupportModal>
 				</Dialog.Root>
 			</div>
 		</div>
@@ -75,47 +99,28 @@
 
 	<div class="grid grid-cols-2 gap-8 not-prose">
 		<SubscriptionCard name={data.article.author.name}></SubscriptionCard>
-		
 
 		<Card.Root class="">
 			<Card.Header>
-				<Card.Title>
-					Verification
-				</Card.Title>
-				<Card.Description>
-					whatever info we want here
-				</Card.Description>
+				<Card.Title>Verification</Card.Title>
+				<Card.Description>whatever info we want here</Card.Description>
 			</Card.Header>
-			<Card.Content class="">
-
-			</Card.Content>
+			<Card.Content class=""></Card.Content>
 			<Card.Footer>
-				<div>
-					user address, nft address, token ID
-				</div>
+				<div>user address, nft address, token ID</div>
 			</Card.Footer>
 		</Card.Root>
 
 		<Card.Root class="">
 			<Card.Header>
-				<Card.Title>
-					Show your support
-				</Card.Title>
+				<Card.Title>Show your support</Card.Title>
 				<Card.Description class="">
-					<div>
-						tip and get NFT
-
-					</div>
+					<div>tip and get NFT</div>
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="">
-				
-				<div>
-					how many supported already
-				</div>
-				<div>
-					support button
-				</div>
+				<div>how many supported already</div>
+				<div>support button</div>
 			</Card.Content>
 		</Card.Root>
 	</div>

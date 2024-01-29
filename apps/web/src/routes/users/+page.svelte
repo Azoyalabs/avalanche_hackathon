@@ -1,10 +1,7 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import * as Card from '$lib/ui/shadcn/ui/card';
 	import * as Avatar from '$lib/ui/shadcn/ui/avatar';
 	import { Button } from '$lib/ui/shadcn/ui/button';
-
-	export let data: PageData;
 </script>
 
 <div class="container pt-12 space-y-6">
