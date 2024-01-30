@@ -19,6 +19,8 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils {
     uint256 public mintPrice;
     address public tokenReceiver;
 
+    mapping(uint => bool) public tokensTracker;
+
     constructor(
         address initialOwner,
         address _tokenReceiver,
@@ -82,24 +84,29 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils {
 
             // it's valid, mint to author
             incrementTrackedId(creator);
+            tokensTracker[tokenId] = true;
             _mint(minter, tokenId, 1, new bytes(0));
         } else {
             // a common user is minting a token for an article
             // check if the article actually exists
             if (idTracker[creator] == 0) {
-                revert NoArticlesByAuthor(creator);                
+                revert NoArticlesByAuthor(creator);
             }
 
             if (articleId >= idTracker[creator]) {
                 revert ArticleIdNotExist(articleId, idTracker[creator] - 1);
-                
             }
 
-            // need to check if is minting the right isPaying type of article 
-            // can just check balance of author? really need to go through ERC-1155 supply 
+            // need to check if is minting the right isPaying type of article
+            // can just check balance of author? really need to go through ERC-1155 supply
+            if (tokensTracker[tokenId] == false) {
+                revert TokenIdNotExist(tokenId);
+            }
+            /*
             if (balanceOf(creator, tokenId) == 0) {
                 revert TokenIdNotExist(tokenId);
             }
+            */
 
             // if it's an article with paid access
             if (isPaying) {
