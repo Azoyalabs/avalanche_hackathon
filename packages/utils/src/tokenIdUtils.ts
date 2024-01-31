@@ -1,6 +1,6 @@
 import { Address } from "viem"
 
-function createTokenId(creator: Address, articleId: bigint, isPaying: boolean): bigint {
+export function createTokenId(creator: Address, articleId: bigint, isPaying: boolean): bigint {
     let tokenId = (BigInt(creator) << BigInt(96)) + (articleId << BigInt(1));
     if (isPaying) {
         tokenId += BigInt(1);
@@ -9,7 +9,7 @@ function createTokenId(creator: Address, articleId: bigint, isPaying: boolean): 
     return tokenId;
 }
 
-function parseTokenId(tokenId: bigint): {creator: Address, articleId: bigint, isPaying: boolean} {
+export function parseTokenId(tokenId: bigint): {creator: Address, articleId: bigint, isPaying: boolean} {
     let creator = BigInt(tokenId >> BigInt(96)).toString(16);
     const articleId = BigInt(tokenId >> BigInt(1)) & BigInt("0xFFFFFFFFFFFFFFFF");
     const isPaying = (tokenId & BigInt(1)) === BigInt(1);
@@ -22,10 +22,4 @@ function parseTokenId(tokenId: bigint): {creator: Address, articleId: bigint, is
         "articleId": articleId,
         "isPaying": isPaying
     };
-}
-
-
-export {
-    createTokenId,
-    parseTokenId
 }
