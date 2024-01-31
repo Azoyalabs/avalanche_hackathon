@@ -24,6 +24,12 @@ jobs:
           npm install -g pnpm@8.6.2
           pnpm install
 
+      - name: Build utils
+        working-directory: ./packages/utils
+        run: |
+          npm run build
+          npm run buildcjs
+
       - name: Run Hardhat tests
         working-directory: ./contracts
         run: |
