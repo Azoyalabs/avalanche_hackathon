@@ -11,6 +11,8 @@ import hre from "hardhat";
 import { toBytes, bytesToHex } from 'viem'
 
 
+
+
 describe("Summit", function () {
     async function deployContracts() {
         const [contractOwner, articleWriter, articleReader, userLambda] = await hre.viem.getWalletClients();
@@ -73,7 +75,7 @@ describe("Summit", function () {
 
 
     describe("Utils", function () {
-        it("Id should be matching", async function () {
+        it("Id should be matching in Solidity", async function () {
             const { bnmToken, summit, summitReceiver, articleWriter, contractOwner, userLambda } = await loadFixture(deployContracts);
 
             [articleWriter.account.address, contractOwner.account.address, userLambda.account.address].forEach((addr) => {
@@ -86,9 +88,11 @@ describe("Summit", function () {
                         expect(isPaying).to.eq(parsedIsPaying);
                     })
                 })
-
             })
+        })
 
+        it("Id should be matching between solidity and TS implementations", async function  () {
+            
         })
 
 
