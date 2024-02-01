@@ -116,12 +116,23 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils {
                     // payment is a-ok, can mint
                 }
 
+                aggregated[creator] += paymentAmount;
                 _mint(minter, tokenId, 1, new bytes(0));
             } else {
                 // free article, the user is supporting the author here
                 aggregated[creator] += paymentAmount;
                 _mint(minter, tokenId, 1, new bytes(0));
             }
+        }
+    }
+
+    function withdraw() public {
+        uint256 amount = aggregated[msg.sender];
+
+        if (amount == 0) {
+            revert("No funds to withdraw");
+        } else {
+            _withdraw(msg.sender, amount, tokenReceiver);
         }
     }
 

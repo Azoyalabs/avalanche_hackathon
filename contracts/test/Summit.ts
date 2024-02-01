@@ -92,7 +92,7 @@ describe("Summit", function () {
             })
         })
 
-        it("Id should be matching between solidity and TS implementations", async function  () {
+        it("Id should be matching between solidity and TS implementations", async function () {
             const { bnmToken, summit, summitReceiver, articleWriter, contractOwner, userLambda } = await loadFixture(deployContracts);
 
             [articleWriter.account.address, contractOwner.account.address, userLambda.account.address].forEach((addr) => {
@@ -114,7 +114,7 @@ describe("Summit", function () {
                     })
                 })
             })
-            
+
         })
 
 
@@ -545,7 +545,7 @@ describe("Summit", function () {
                         account: articleWriter.account
                     }
                 );
-                
+
 
                 const invalidTokenId = await summit.read.createTokenId(
                     [articleWriter.account.address, BigInt(4), false]
@@ -561,7 +561,7 @@ describe("Summit", function () {
                     }
                 )).to.be.rejectedWith("ArticleIdNotExist");
             })
-            
+
             it("Reader fails to mint non-existing paying article with id non-0 from known author", async function () {
                 const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
 
@@ -589,7 +589,7 @@ describe("Summit", function () {
                         account: articleWriter.account
                     }
                 );
-                
+
 
                 const invalidTokenId = await summit.read.createTokenId(
                     [articleWriter.account.address, BigInt(4), true]
@@ -608,7 +608,7 @@ describe("Summit", function () {
 
             it("Reader fails to mint existing paying article with non-paying token id", async function () {
                 const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
-                
+
                 // set role for minting 
                 await bnmToken.write.grantMintRole([contractOwner.account.address]);
                 // mint tokens 
@@ -633,7 +633,7 @@ describe("Summit", function () {
                         account: articleWriter.account
                     }
                 );
-                
+
 
                 const invalidTokenId = await summit.read.createTokenId(
                     [articleWriter.account.address, BigInt(0), false]
@@ -650,10 +650,10 @@ describe("Summit", function () {
                 )).to.be.rejectedWith("TokenIdNotExist");
             })
 
-            
+
             it("Reader fails to mint existing free article with paying token id", async function () {
                 const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
-                
+
                 // set role for minting 
                 await bnmToken.write.grantMintRole([contractOwner.account.address]);
                 // mint tokens 
@@ -678,7 +678,7 @@ describe("Summit", function () {
                         account: articleWriter.account
                     }
                 );
-                
+
 
                 const invalidTokenId = await summit.read.createTokenId(
                     [articleWriter.account.address, BigInt(0), true]
@@ -693,6 +693,70 @@ describe("Summit", function () {
                         account: articleReader.account
                     }
                 )).to.be.rejectedWith("TokenIdNotExist");
+            })
+        })
+
+        describe("Withdrawal", function () {
+            it("Successful withdrawal after paying article", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
+                // set role for minting 
+                await bnmToken.write.grantMintRole([contractOwner.account.address]);
+                // mint tokens 
+                await bnmToken.write.mint([articleReader.account.address, BigInt(500)]);
+
+                // create tokenId for minting 
+                const tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), true]
+                );
+
+                // create the article 
+                await bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                );
+
+                // user mints an article 
+                const articlePrice = await summit.read.mintPrice();
+                await bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        articlePrice,
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleReader.account,
+                    }
+                );
+
+                // check writer's balance on summit
+                expect(
+                    await summit.read.aggregated([articleWriter.account.address])
+                ).to.be.eq(articlePrice);
+
+                // and now try to withdraw and check final balance 
+                await summit.write.withdraw(
+                    {
+                        account: articleWriter.account,
+                    }
+                );
+
+                // check balance in ERC20 to see if withdrawal was successful 
+                expect(
+                    await bnmToken.read.balanceOf([articleWriter.account.address])
+                ).to.be.eq(articlePrice);
+
+                // check that balance on summit was wiped 
+                expect(
+                    await summit.read.aggregated([articleWriter.account.address])
+                ).to.be.eq(BigInt(0));
+
+
             })
         })
     })

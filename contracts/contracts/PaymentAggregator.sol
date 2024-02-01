@@ -7,7 +7,8 @@ import {IRelayTransferERC20} from "./Interfaces/IRelayTransferErc20.sol";
 contract PaymentAggregator {
     mapping(address => uint) public aggregated;
 
-    function _withdraw(address receiverAddress) public {
+    /*
+    function withdraw(address receiverAddress) public {
         uint amount = aggregated[msg.sender];
 
         if (amount == 0) {
@@ -17,5 +18,11 @@ contract PaymentAggregator {
             //require(payable(msg.sender).send(amount), "Transfer failed");
             IRelayTransferERC20(receiverAddress).transferTokens(receiverAddress, amount);
         }
+    }
+    */
+
+    function _withdraw(address beneficiary, uint256 amount, address proxy) internal {
+        aggregated[msg.sender] = 0;
+        IRelayTransferERC20(proxy).transferTokens(beneficiary, amount);
     }
 }

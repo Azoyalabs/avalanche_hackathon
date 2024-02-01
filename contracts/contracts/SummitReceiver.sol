@@ -17,7 +17,12 @@ import {IRelayTransferERC20} from "./Interfaces/IRelayTransferErc20.sol";
     Entrypoint for payments to Summit. 
     We'll use this simply as a relayer, and leave the checks to the Summit contract
 */
-contract SummitReceiver is CCIPReceiver, OwnerIsCreator, IERC677Receiver, IRelayTransferERC20 {
+contract SummitReceiver is
+    CCIPReceiver,
+    OwnerIsCreator,
+    IERC677Receiver,
+    IRelayTransferERC20
+{
     Summit public target;
 
     address public paymentToken;
@@ -32,24 +37,6 @@ contract SummitReceiver is CCIPReceiver, OwnerIsCreator, IERC677Receiver, IRelay
         target = Summit(_target); //new MediumAccess();
         paymentToken = _paymentToken;
     }
-
-    /*
-    function _ccipReceive(
-        Client.Any2EVMMessage memory message
-    ) internal override {
-        require(
-            message.destTokenAmounts[0].amount >= price,
-            "Not enough CCIP-BnM for mint"
-        );
-        require(
-            message.destTokenAmounts[0].token == paymentToken,
-            "Invalid Denomination for payment"
-        );
-        (bool success, ) = address(target).call(message.data);
-        require(success);
-        emit MintCallSuccessfull();
-    }
-    */
 
     function updateTarget(address _newTarget) external {
         target = Summit(_newTarget);
@@ -73,7 +60,7 @@ contract SummitReceiver is CCIPReceiver, OwnerIsCreator, IERC677Receiver, IRelay
         );
         emit MintCallSuccessfull();
     }
-    
+
     /*
         Also could implement as a callback from the ERC20 instead of approval + transfer right? 
         CCIP-BnM is an ERC677 token, which is a transferAndCall token
