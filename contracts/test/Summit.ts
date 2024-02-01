@@ -16,7 +16,7 @@ import { parseTokenId, createTokenId } from "summit-utils";
 
 describe("Summit", function () {
     async function deployContracts() {
-        const [contractOwner, articleWriter, articleReader, userLambda] = await hre.viem.getWalletClients();
+        const [contractOwner, articleWriter, articleReader, userLambda, userLambda2] = await hre.viem.getWalletClients();
 
         // deploy token for payments
         const bnmToken = await hre.viem.deployContract("BnMToken", [], {
@@ -54,6 +54,7 @@ describe("Summit", function () {
             articleWriter,
             articleReader,
             userLambda,
+            userLambda2,
             publicClient
         }
     }
@@ -695,34 +696,163 @@ describe("Summit", function () {
                 )).to.be.rejectedWith("TokenIdNotExist");
             })
         })
+    })
 
-        describe("Withdrawal", function () {
-            it("Successful withdrawal after paying article", async function () {
-                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
-                // set role for minting 
-                await bnmToken.write.grantMintRole([contractOwner.account.address]);
-                // mint tokens 
-                await bnmToken.write.mint([articleReader.account.address, BigInt(500)]);
+    describe("Withdrawal", function () {
+        it("Successful withdrawal after paying article", async function () {
+            const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
+            // set role for minting 
+            await bnmToken.write.grantMintRole([contractOwner.account.address]);
+            // mint tokens 
+            await bnmToken.write.mint([articleReader.account.address, BigInt(500)]);
 
-                // create tokenId for minting 
-                const tokenId = await summit.read.createTokenId(
-                    [articleWriter.account.address, BigInt(0), true]
-                );
+            // create tokenId for minting 
+            const tokenId = await summit.read.createTokenId(
+                [articleWriter.account.address, BigInt(0), true]
+            );
 
-                // create the article 
-                await bnmToken.write.transferAndCall(
-                    [
-                        summitReceiver.address,
-                        BigInt(0),
-                        bytesToHex(toBytes(tokenId))
-                    ],
-                    {
-                        account: articleWriter.account
-                    }
-                );
+            // create the article 
+            await bnmToken.write.transferAndCall(
+                [
+                    summitReceiver.address,
+                    BigInt(0),
+                    bytesToHex(toBytes(tokenId))
+                ],
+                {
+                    account: articleWriter.account
+                }
+            );
 
-                // user mints an article 
-                const articlePrice = await summit.read.mintPrice();
+            // user mints an article 
+            const articlePrice = await summit.read.mintPrice();
+            await bnmToken.write.transferAndCall(
+                [
+                    summitReceiver.address,
+                    articlePrice,
+                    bytesToHex(toBytes(tokenId))
+                ],
+                {
+                    account: articleReader.account,
+                }
+            );
+
+            // check writer's balance on summit
+            expect(
+                await summit.read.aggregated([articleWriter.account.address])
+            ).to.be.eq(articlePrice);
+
+            // and now try to withdraw and check final balance 
+            await summit.write.withdraw(
+                {
+                    account: articleWriter.account,
+                }
+            );
+
+            // check balance in ERC20 to see if withdrawal was successful 
+            expect(
+                await bnmToken.read.balanceOf([articleWriter.account.address])
+            ).to.be.eq(articlePrice);
+
+            // check that balance on summit was wiped 
+            expect(
+                await summit.read.aggregated([articleWriter.account.address])
+            ).to.be.eq(BigInt(0));
+        })
+
+        it("Successful withdrawal after free article", async function () {
+            const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner } = await loadFixture(deployContracts);
+            // set role for minting 
+            await bnmToken.write.grantMintRole([contractOwner.account.address]);
+            // mint tokens 
+            await bnmToken.write.mint([articleReader.account.address, BigInt(500)]);
+
+            // create tokenId for minting 
+            const tokenId = await summit.read.createTokenId(
+                [articleWriter.account.address, BigInt(0), false]
+            );
+
+            // create the article 
+            await bnmToken.write.transferAndCall(
+                [
+                    summitReceiver.address,
+                    BigInt(0),
+                    bytesToHex(toBytes(tokenId))
+                ],
+                {
+                    account: articleWriter.account
+                }
+            );
+
+            // user mints an article 
+            const supportAmount = BigInt(250);
+            await bnmToken.write.transferAndCall(
+                [
+                    summitReceiver.address,
+                    supportAmount,
+                    bytesToHex(toBytes(tokenId))
+                ],
+                {
+                    account: articleReader.account,
+                }
+            );
+
+            // check writer's balance on summit
+            expect(
+                await summit.read.aggregated([articleWriter.account.address])
+            ).to.be.eq(supportAmount);
+
+            // and now try to withdraw and check final balance 
+            await summit.write.withdraw(
+                {
+                    account: articleWriter.account,
+                }
+            );
+
+            // check balance in ERC20 to see if withdrawal was successful 
+            expect(
+                await bnmToken.read.balanceOf([articleWriter.account.address])
+            ).to.be.eq(supportAmount);
+
+            // check that balance on summit was wiped 
+            expect(
+                await summit.read.aggregated([articleWriter.account.address])
+            ).to.be.eq(BigInt(0));
+        })
+
+        it("Successful withdrawal after multiple payments on single paying article", async function () {
+            const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+            // set role for minting 
+            await bnmToken.write.grantMintRole([contractOwner.account.address]);
+
+            // define our readers 
+            const readerAccounts = [contractOwner, articleReader, userLambda, userLambda2];
+
+            // mint tokens 
+            for (const currAccount of readerAccounts) {
+                await bnmToken.write.mint([currAccount.account.address, BigInt(500)]);
+            }
+
+            // create tokenId for minting 
+            const tokenId = await summit.read.createTokenId(
+                [articleWriter.account.address, BigInt(0), true]
+            );
+
+            // create the article 
+            await bnmToken.write.transferAndCall(
+                [
+                    summitReceiver.address,
+                    BigInt(0),
+                    bytesToHex(toBytes(tokenId))
+                ],
+                {
+                    account: articleWriter.account
+                }
+            );
+
+            // readers mints the article 
+            const articlePrice = await summit.read.mintPrice();
+
+            for (const currAccount of readerAccounts) {
                 await bnmToken.write.transferAndCall(
                     [
                         summitReceiver.address,
@@ -730,34 +860,105 @@ describe("Summit", function () {
                         bytesToHex(toBytes(tokenId))
                     ],
                     {
-                        account: articleReader.account,
+                        account: currAccount.account,
                     }
                 );
+            }
 
-                // check writer's balance on summit
-                expect(
-                    await summit.read.aggregated([articleWriter.account.address])
-                ).to.be.eq(articlePrice);
 
-                // and now try to withdraw and check final balance 
-                await summit.write.withdraw(
+            // check writer's balance on summit
+            expect(
+                await summit.read.aggregated([articleWriter.account.address])
+            ).to.be.eq(articlePrice * BigInt(readerAccounts.length));
+
+            
+            // and now try to withdraw and check final balance 
+            await summit.write.withdraw(
+                {
+                    account: articleWriter.account,
+                }
+            );
+
+            // check balance in ERC20 to see if withdrawal was successful 
+            expect(
+                await bnmToken.read.balanceOf([articleWriter.account.address])
+            ).to.be.eq(articlePrice * BigInt(readerAccounts.length));
+
+            // check that balance on summit was wiped 
+            expect(
+                await summit.read.aggregated([articleWriter.account.address])
+            ).to.be.eq(BigInt(0));
+        })
+
+        it("Successful withdrawal after multiple payments on single free article", async function () {
+            const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+            // set role for minting 
+            await bnmToken.write.grantMintRole([contractOwner.account.address]);
+
+            // define our readers 
+            const readerAccounts = [contractOwner, articleReader, userLambda, userLambda2];
+
+            // mint tokens 
+            for (const currAccount of readerAccounts) {
+                await bnmToken.write.mint([currAccount.account.address, BigInt(500)]);
+            }
+
+            // create tokenId for minting 
+            const tokenId = await summit.read.createTokenId(
+                [articleWriter.account.address, BigInt(0), false]
+            );
+
+            // create the article 
+            await bnmToken.write.transferAndCall(
+                [
+                    summitReceiver.address,
+                    BigInt(0),
+                    bytesToHex(toBytes(tokenId))
+                ],
+                {
+                    account: articleWriter.account
+                }
+            );
+
+            // readers mints the article 
+            const supportPrice = BigInt(123);
+
+            for (const currAccount of readerAccounts) {
+                await bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        supportPrice,
+                        bytesToHex(toBytes(tokenId))
+                    ],
                     {
-                        account: articleWriter.account,
+                        account: currAccount.account,
                     }
                 );
-
-                // check balance in ERC20 to see if withdrawal was successful 
-                expect(
-                    await bnmToken.read.balanceOf([articleWriter.account.address])
-                ).to.be.eq(articlePrice);
-
-                // check that balance on summit was wiped 
-                expect(
-                    await summit.read.aggregated([articleWriter.account.address])
-                ).to.be.eq(BigInt(0));
+            }
 
 
-            })
+            // check writer's balance on summit
+            expect(
+                await summit.read.aggregated([articleWriter.account.address])
+            ).to.be.eq(supportPrice * BigInt(readerAccounts.length));
+
+            
+            // and now try to withdraw and check final balance 
+            await summit.write.withdraw(
+                {
+                    account: articleWriter.account,
+                }
+            );
+
+            // check balance in ERC20 to see if withdrawal was successful 
+            expect(
+                await bnmToken.read.balanceOf([articleWriter.account.address])
+            ).to.be.eq(supportPrice * BigInt(readerAccounts.length));
+
+            // check that balance on summit was wiped 
+            expect(
+                await summit.read.aggregated([articleWriter.account.address])
+            ).to.be.eq(BigInt(0));
         })
     })
 })
