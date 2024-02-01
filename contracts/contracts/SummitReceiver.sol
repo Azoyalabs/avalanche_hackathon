@@ -7,16 +7,17 @@ import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 import {IERC677Receiver} from "@chainlink/contracts-ccip/src/v0.8/shared/token/ERC677/IERC677Receiver.sol";
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 //import "./MediumAccess.sol";
 import "./Summit.sol";
+import {IRelayTransferERC20} from "./Interfaces/IRelayTransferErc20.sol";
 
 /*
     Entrypoint for payments to Summit. 
     We'll use this simply as a relayer, and leave the checks to the Summit contract
 */
-contract SummitReceiver is CCIPReceiver, OwnerIsCreator, IERC677Receiver {
+contract SummitReceiver is CCIPReceiver, OwnerIsCreator, IERC677Receiver, IRelayTransferERC20 {
     Summit public target;
 
     address public paymentToken;
@@ -72,28 +73,7 @@ contract SummitReceiver is CCIPReceiver, OwnerIsCreator, IERC677Receiver {
         );
         emit MintCallSuccessfull();
     }
-
-    /**
-     * Handle direct mint in a same chain context, unlike ccipReceive which handles crosschain minting
-     * Payment done through ERC20 so need to have given allowance to this contract
-     */
-    function directPayment(
-        uint256 tokenId,
-        uint256 paymentAmount,
-        bytes memory data
-    ) public {
-        // need to handle payment here if amount is non-zero
-        if (paymentAmount > 0) {
-            IERC20(paymentToken).transferFrom(
-                msg.sender,
-                address(this),
-                paymentAmount
-            );
-        }
-
-        target.mintErc20(msg.sender, tokenId, paymentAmount, data);
-    }
-
+    
     /*
         Also could implement as a callback from the ERC20 instead of approval + transfer right? 
         CCIP-BnM is an ERC677 token, which is a transferAndCall token
@@ -118,5 +98,10 @@ contract SummitReceiver is CCIPReceiver, OwnerIsCreator, IERC677Receiver {
             amount,
             new bytes(0)
         );
+    }
+
+    function transferTokens(address beneficiary, uint256 amount) external {
+        require(msg.sender == address(target), "Unauthorized");
+        ERC20(paymentToken).transfer(beneficiary, amount);
     }
 }

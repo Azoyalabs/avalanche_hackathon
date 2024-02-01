@@ -338,26 +338,7 @@ describe("Summit", function () {
                     );
                 }
             })
-
         })
-
-        describe("Direct Payment - Approval-based workflow", function () {
-            it("Writer can create a new free article", async function () {
-                const { summit, bnmToken, summitReceiver, contractOwner, articleWriter } = await loadFixture(deployContracts);
-
-                // create token ID for a non paying article
-                const tokenId = await summit.read.createTokenId(
-                    [articleWriter.account.address, BigInt(0), false]
-                );
-
-                // call receiver to mint the token
-                await summitReceiver.write.directPayment(
-                    [tokenId, BigInt(0), "0x"],
-                    { account: articleWriter.account }
-                );
-            })
-        })
-
 
         describe("TransferAndCall - ERC677-based workflow", function () {
             it("Writer can create a new free article", async function () {
