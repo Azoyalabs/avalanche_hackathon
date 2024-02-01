@@ -9,11 +9,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // import "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
 
 import "./PaymentAggregator.sol";
+import "./AccessControl.sol";
 
 import "./IdTracker.sol";
 import "./TokenUtils.sol";
 
-contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils {
+contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils { //, AccessControl {
     uint256 constant MAX_ARTICLE_ID = 1 << (96 - 1);
 
     uint256 public mintPrice;
@@ -23,11 +24,13 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils {
 
     constructor(
         address initialOwner,
+        // address accessController,
         address _tokenReceiver,
         uint256 _mintPrice
     )
         ERC1155("") // "https://samplewebsite.org/api/{id}"
         Ownable(initialOwner)
+        //AccessControl(initialOwner)
     {
         tokenReceiver = _tokenReceiver;
 
