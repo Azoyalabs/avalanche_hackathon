@@ -139,9 +139,8 @@
 				height="48"
 			/>
 			 -->
-			 <div></div>
 			<img
-				class="object-contain object-left w-full max-h-12"
+				class="object-contain object-center w-full col-span-2 max-h-12"
 				src="/logos/particle.webp"
 				alt="Particle"
 				width="158"

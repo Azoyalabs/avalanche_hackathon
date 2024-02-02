@@ -4,7 +4,7 @@
 	import SubscriptionCard from '$lib/ui/app/SubscriptionCard/SubscriptionCard.svelte';
 	import { writable } from 'svelte/store';
 	import { CONTEXT_KEY, LayoutLink } from './context';
-	import { setContext } from 'svelte';
+	import { onMount, setContext } from 'svelte';
 
 	const authorName = 'Author Name';
 
@@ -18,6 +18,8 @@
 
 	// TODO: handle has domain
 	const domain = {}
+
+	
 </script>
 
 <div class="container space-y-8">
@@ -58,17 +60,17 @@
 							aria-current="page">Backed</a
 						>
 						<a
+							href={LINK_TO(LayoutLink.Stats)}
+							data-sveltekit-noscroll
+							data-active={$currentLink === LayoutLink.Stats}
+							class="px-1 pb-4 text-sm font-medium border-b-2 whitespace-nowrap">Stats</a
+						>
+						<a
 							href={LINK_TO(LayoutLink.Profile)}
 							data-sveltekit-noscroll
 							data-active={$currentLink === LayoutLink.Profile}
 							class="px-1 pb-4 text-sm font-medium border-b-2 whitespace-nowrap"
 							>Profile (if connected?)</a
-						>
-						<a
-							href={LINK_TO(LayoutLink.Stats)}
-							data-sveltekit-noscroll
-							data-active={$currentLink === LayoutLink.Stats}
-							class="px-1 pb-4 text-sm font-medium border-b-2 whitespace-nowrap">Stats</a
 						>
 					</nav>
 				</div>

@@ -44,7 +44,7 @@
 				</span>
 			</div>
 
-			<div class="relative pt-6 overflow-y-hidden text-sm text-muted-foreground max-h-24">
+			<div class="relative pt-6 overflow-y-hidden text-sm text-muted-foreground max-h-24 @xl:max-h-none">
 				{article.preview}
 
 				<div

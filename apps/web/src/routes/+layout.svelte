@@ -2,10 +2,87 @@
 	import { navigating } from '$app/stores';
 	import { Button } from '$lib/ui/shadcn/ui/button';
 	import { Toaster } from '$lib/ui/shadcn/ui/sonner';
-	import { MountainSnow, Shell } from 'lucide-svelte';
+	import { MountainSnow } from 'lucide-svelte';
 
 	import '../app.pcss';
+	import { onMount } from 'svelte';
+
+	import {
+		ParticleConnect,
+		evmWallets,
+		metaMask,
+		walletconnect,
+		type ConnectConfig,
+		type EVMProvider
+	} from '@particle-network/connect';
+
+	import {
+		PUBLIC_PARTICLE_APP_ID,
+		PUBLIC_PARTICLE_CLIENT_KEY,
+		PUBLIC_PARTICLE_PROJECT_ID
+	} from '$env/static/public';
+	import {
+		AvalancheTestnet,
+		chains,
+		type Chain,
+		BNBChainTestnet,
+		Ethereum,
+		EthereumGoerli
+	} from '@particle-network/chains';
+
+	import { createWalletClient, custom } from 'viem';
+	import * as Drawer from '$lib/ui/shadcn/ui/drawer';
+	import AvatarGenerator from '$lib/ui/app/AvatarGenerator/AvatarGenerator.svelte';
+
+	onMount(() => {
+		// TODO: support other chains for crosschain minting
+		const config: ConnectConfig = {
+			projectId: PUBLIC_PARTICLE_PROJECT_ID,
+			clientKey: PUBLIC_PARTICLE_CLIENT_KEY,
+			appId: PUBLIC_PARTICLE_APP_ID,
+			chains: [
+				Ethereum as Chain,
+				EthereumGoerli as Chain,
+				AvalancheTestnet as Chain,
+				BNBChainTestnet as Chain
+			],
+			wallets: [
+				metaMask({
+					projectId: import.meta.env.VITE_APP_WALLETCONNECT_PROJECT_ID,
+					showQrModal: false
+				}),
+				walletconnect({
+					projectId: import.meta.env.VITE_APP_WALLETCONNECT_PROJECT_ID,
+					showQrModal: true
+				})
+			]
+		};
+
+		const connect = new ParticleConnect(config);
+
+		/*
+		console.dir(connect.walletMetas());
+		connect.connect().then((p) => {
+			const client = createWalletClient({
+				transport: custom(p as EVMProvider),
+				chain: {}
+			});
+
+			console.dir(client.chain);
+
+			client.getAddresses().then((a) => {
+				console.dir(a);
+			});
+		});
+		//		const provider = connect.connect();
+		*/
+	});
+	import * as Sheet from '$lib/ui/shadcn/ui/sheet';
+	import SheetBody from '$lib/ui/app/SheetBody/SheetBody.svelte';
+
+	const connected = false;
 </script>
+<Toaster />
 
 <header class="py-3 border-b">
 	<div class="container flex items-center justify-between">
@@ -14,11 +91,85 @@
 			<span class="ml-2 text-2xl font-black uppercase font-nunito">Summit</span>
 		</a>
 		<div>
-			<Button size="sm">Connect</Button>
+			{#if connected}
+				<Sheet.Root>
+					<Sheet.Trigger class="hidden md:block">
+						<Button size="icon" variant="ghost" class="rounded-full">
+							<AvatarGenerator
+								props={{
+									name: 'archway18m26lkjly2hkck25t7sdsrnu72x0g6gxdxxr4q',
+									colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
+									square: false
+								}}
+							></AvatarGenerator>
+						</Button>
+					</Sheet.Trigger>
+					<Sheet.Content>
+						<Sheet.Header>
+							<div class="flex items-center space-x-3">
+								<div class="h-9 w-9">
+									<AvatarGenerator
+										props={{
+											name: 'archway18m26lkjly2hkck25t7sdsrnu72x0g6gxdxxr4q',
+											colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
+											square: false
+										}}
+									></AvatarGenerator>
+								</div>
+								<div>
+									<Sheet.Title>0x18979...absje6</Sheet.Title>
+									<Sheet.Description>View Profile</Sheet.Description>
+								</div>
+							</div>
+						</Sheet.Header>
+						<SheetBody></SheetBody>
+						<Sheet.Footer>
+							<Button variant="ghost">Disconnect</Button>
+						</Sheet.Footer>
+					</Sheet.Content>
+				</Sheet.Root>
+
+				<Drawer.Root>
+					<Drawer.Trigger class="md:hidden">
+						<Button size="icon" variant="ghost" class="rounded-full">
+							<AvatarGenerator
+								props={{
+									name: 'archway18m26lkjly2hkck25t7sdsrnu72x0g6gxdxxr4q',
+									colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
+									square: false
+								}}
+							></AvatarGenerator>
+						</Button>
+					</Drawer.Trigger>
+					<Drawer.Content>
+						<Drawer.Header class="flex items-center space-x-3">
+							<div class="h-9 w-9">
+								<AvatarGenerator
+									props={{
+										name: 'archway18m26lkjly2hkck25t7sdsrnu72x0g6gxdxxr4q',
+										colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
+										square: false
+									}}
+								></AvatarGenerator>
+							</div>
+							<div class="flex flex-col text-left">
+								<Drawer.Title>0x18979...absje6</Drawer.Title>
+								<Drawer.Description>View Profile</Drawer.Description>
+							</div>
+						</Drawer.Header>
+						<SheetBody></SheetBody>
+						<Drawer.Footer>
+							<Button variant="ghost">Disconnect</Button>
+						</Drawer.Footer>
+					</Drawer.Content>
+				</Drawer.Root>
+			{:else}
+				<Button>Connect wallet</Button>
+			{/if}
 		</div>
 	</div>
 </header>
-<Toaster />
+
 
 <div class="flex-grow">
 	{#if $navigating}

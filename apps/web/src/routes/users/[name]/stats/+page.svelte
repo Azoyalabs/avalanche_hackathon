@@ -5,3 +5,6 @@
 </script>
 
 Stats
+
+
+<img src="https://logos.covalenthq.com/tokens/43113/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.png">
