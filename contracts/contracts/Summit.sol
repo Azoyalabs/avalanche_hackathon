@@ -24,13 +24,14 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils, A
 
     constructor(
         address initialOwner,
-        // address accessController,
+        address accessController,
         address _tokenReceiver,
-        uint256 _mintPrice
+        uint256 _mintPrice,
+        string memory _uri
     )
-        ERC1155("") // "https://samplewebsite.org/api/{id}"
+        ERC1155(_uri) // "https://samplewebsite.org/api/{id}"
         Ownable(initialOwner)
-        AccessControl(initialOwner)
+        AccessControl(accessController)
     {
         tokenReceiver = _tokenReceiver;
 
@@ -109,11 +110,6 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils, A
             if (tokensTracker[tokenId] == false) {
                 revert TokenIdNotExist(tokenId);
             }
-            /*
-            if (balanceOf(creator, tokenId) == 0) {
-                revert TokenIdNotExist(tokenId);
-            }
-            */
 
             // if it's an article with paid access
             if (isPaying) {

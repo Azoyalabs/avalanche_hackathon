@@ -16,7 +16,7 @@ import { parseTokenId, createTokenId } from "summit-utils";
 
 describe("Summit", function () {
     async function deployContracts() {
-        const [contractOwner, articleWriter, articleReader, userLambda, userLambda2] = await hre.viem.getWalletClients();
+        const [contractOwner, articleWriter, articleReader, userLambda, userLambda2, accessController] = await hre.viem.getWalletClients();
 
         // deploy token for payments
         const bnmToken = await hre.viem.deployContract("BnMToken", [], {
@@ -33,11 +33,19 @@ describe("Summit", function () {
         // router cannot be 0x, so need to set a random address for now 
         // target also cannot be 0x
         const summitReceiver = await hre.viem.deployContract("SummitReceiver",
-            [contractOwner.account.address, contractOwner.account.address, bnmToken.address], {
+            [contractOwner.account.address, "0x0000000000000000000000000000000000000000", bnmToken.address], {
         });
 
         // deploy Summit 
-        const summit = await hre.viem.deployContract("Summit", [contractOwner.account.address, summitReceiver.address, BigInt(100)], {
+        const summit = await hre.viem.deployContract(
+            "Summit", 
+            [
+                contractOwner.account.address, 
+                accessController.account.address, 
+                summitReceiver.address, 
+                BigInt(100), 
+                "https://samplewebsite.org/api/{id}"], 
+        {
         });
 
         // update target in ccipReceiver 
@@ -45,7 +53,7 @@ describe("Summit", function () {
 
         // allow all addresses in AccessControl 
         for (const currAddr of [contractOwner, articleWriter, articleReader, userLambda, userLambda2]) {
-            await summit.write.setAccessStatus([currAddr.account.address, 1]);
+            await summit.write.setAccessStatus([currAddr.account.address, 1], {account: accessController.account});
         }
 
 
@@ -60,6 +68,7 @@ describe("Summit", function () {
             articleReader,
             userLambda,
             userLambda2,
+            accessController,
             publicClient
         }
     }
@@ -1147,10 +1156,10 @@ describe("Summit", function () {
     describe("Access Control", function () {
         describe("General checks", function () {
             it("Can change access status", async function () {
-                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2, accessController } = await loadFixture(deployContracts);
 
                 for (let i = 0; i < 3; i++) {
-                    await summit.write.setAccessStatus([articleWriter.account.address, i]);
+                    await summit.write.setAccessStatus([articleWriter.account.address, i], { account: accessController.account });
                     expect(await summit.read.accessStatusTracker([articleWriter.account.address])).to.be.eq(i);
                 }
             })
@@ -1162,7 +1171,7 @@ describe("Summit", function () {
             })
 
             it("Can modify access controller", async function () {
-                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2, accessController } = await loadFixture(deployContracts);
 
                 // assert that userLambda cannot call this function 
                 await expect(summit.write.setAccessStatus(
@@ -1173,7 +1182,7 @@ describe("Summit", function () {
                 // modify the access control admin to userLambda
                 await summit.write.setAccessControlAdmin(
                     [userLambda.account.address],
-                    { account: contractOwner.account }
+                    { account: accessController.account }
                 );
 
                 // assert that userLambda can call the setAccess function
@@ -1182,20 +1191,20 @@ describe("Summit", function () {
                     { account: userLambda.account })
                 );
 
-                // and the contractOwner cannot do so anymore 
+                // and the accessController cannot do so anymore 
                 await expect(summit.write.setAccessStatus(
                     [articleWriter.account.address, 2],
-                    { account: contractOwner.account })
+                    { account: accessController.account })
                 ).to.be.rejectedWith("Unauthorized");
             })
         })
 
         describe("Writer tests", function () {
             it("Unknown writer cannot mint", async function () {
-                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2, accessController } = await loadFixture(deployContracts);
 
                 // current status is allowed for all addresses, switch for articleWriter
-                await summit.write.setAccessStatus([articleWriter.account.address, 0]);
+                await summit.write.setAccessStatus([articleWriter.account.address, 0], { account: accessController.account });
 
                 // get token id
                 const tokenId = await summit.read.createTokenId(
@@ -1216,10 +1225,10 @@ describe("Summit", function () {
             })
 
             it("Banned writer cannot mint", async function () {
-                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2, accessController } = await loadFixture(deployContracts);
 
                 // current status is allowed for all addresses, switch for articleWriter
-                await summit.write.setAccessStatus([articleWriter.account.address, 2]);
+                await summit.write.setAccessStatus([articleWriter.account.address, 2], { account: accessController.account });
 
                 // get token id
                 const tokenId = await summit.read.createTokenId(
@@ -1240,10 +1249,10 @@ describe("Summit", function () {
             })
 
             it("Allowed writer can mint", async function () {
-                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2, accessController } = await loadFixture(deployContracts);
 
                 // current status is allowed for all addresses, switch for articleWriter
-                await summit.write.setAccessStatus([articleWriter.account.address, 1]);
+                await summit.write.setAccessStatus([articleWriter.account.address, 1], { account: accessController.account });
 
                 // get token id
                 const tokenId = await summit.read.createTokenId(
@@ -1264,10 +1273,10 @@ describe("Summit", function () {
             })
 
             it("Complex access changes are consistent for writer", async function () {
-                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2, accessController } = await loadFixture(deployContracts);
 
                 // current status is allowed for all addresses, switch for articleWriter
-                await summit.write.setAccessStatus([articleWriter.account.address, 0]);
+                await summit.write.setAccessStatus([articleWriter.account.address, 0], { account: accessController.account });
 
                 // get token id
                 let tokenId = await summit.read.createTokenId(
@@ -1287,7 +1296,7 @@ describe("Summit", function () {
                 )).to.be.rejectedWith("NotAllowedAccess");
 
                 // then we toggle to allow writer to mint 
-                await summit.write.setAccessStatus([articleWriter.account.address, 1]);
+                await summit.write.setAccessStatus([articleWriter.account.address, 1], { account: accessController.account });
                 await expect(bnmToken.write.transferAndCall(
                     [
                         summitReceiver.address,
@@ -1304,7 +1313,7 @@ describe("Summit", function () {
                     [articleWriter.account.address, BigInt(1), false]
                 );
 
-                await summit.write.setAccessStatus([articleWriter.account.address, 0]);
+                await summit.write.setAccessStatus([articleWriter.account.address, 0], { account: accessController.account });
                 await expect(bnmToken.write.transferAndCall(
                     [
                         summitReceiver.address,
@@ -1317,7 +1326,7 @@ describe("Summit", function () {
                 )).to.be.rejectedWith("NotAllowedAccess");
 
                 // then banned 
-                await summit.write.setAccessStatus([articleWriter.account.address, 2]);
+                await summit.write.setAccessStatus([articleWriter.account.address, 2], { account: accessController.account });
                 await expect(bnmToken.write.transferAndCall(
                     [
                         summitReceiver.address,
@@ -1330,7 +1339,7 @@ describe("Summit", function () {
                 )).to.be.rejectedWith("NotAllowedAccess");
 
                 // and finally allowed 
-                await summit.write.setAccessStatus([articleWriter.account.address, 1]);
+                await summit.write.setAccessStatus([articleWriter.account.address, 1], { account: accessController.account });
                 await expect(bnmToken.write.transferAndCall(
                     [
                         summitReceiver.address,
@@ -1347,10 +1356,10 @@ describe("Summit", function () {
 
         describe("Reader tests", function () {
             it("Unknown reader cannot mint", async function () {
-                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2, accessController } = await loadFixture(deployContracts);
 
                 // current status is allowed for all addresses, switch for articleReader
-                await summit.write.setAccessStatus([articleReader.account.address, 0]);
+                await summit.write.setAccessStatus([articleReader.account.address, 0], {account: accessController.account});
 
                 // get token id
                 const tokenId = await summit.read.createTokenId(
@@ -1383,10 +1392,10 @@ describe("Summit", function () {
             })
 
             it("Banned reader cannot mint", async function () {
-                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2, accessController } = await loadFixture(deployContracts);
 
                 // current status is allowed for all addresses, switch for articleWriter
-                await summit.write.setAccessStatus([articleReader.account.address, 2]);
+                await summit.write.setAccessStatus([articleReader.account.address, 2], {account: accessController.account});
 
                 // get token id
                 const tokenId = await summit.read.createTokenId(
@@ -1419,10 +1428,10 @@ describe("Summit", function () {
             })
 
             it("Allowed reader can mint", async function () {
-                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2, accessController } = await loadFixture(deployContracts);
 
                 // current status is allowed for all addresses, switch for articleWriter
-                await summit.write.setAccessStatus([articleWriter.account.address, 1]);
+                await summit.write.setAccessStatus([articleWriter.account.address, 1], {account: accessController.account});
 
                 // get token id
                 const tokenId = await summit.read.createTokenId(
@@ -1455,10 +1464,10 @@ describe("Summit", function () {
             })
 
             it("Complex access changes are consistent for reader", async function () {
-                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2, accessController } = await loadFixture(deployContracts);
 
                 // current status is allowed for all addresses, switch for articleWriter
-                await summit.write.setAccessStatus([articleReader.account.address, 0]);
+                await summit.write.setAccessStatus([articleReader.account.address, 0], {account: accessController.account});
 
                 // get token id
                 let tokenId = await summit.read.createTokenId(
@@ -1490,7 +1499,7 @@ describe("Summit", function () {
                 )).to.be.rejectedWith("NotAllowedAccess");
 
                 // then we toggle to allow reader to mint 
-                await summit.write.setAccessStatus([articleReader.account.address, 1]);
+                await summit.write.setAccessStatus([articleReader.account.address, 1], {account: accessController.account});
                 await expect(bnmToken.write.transferAndCall(
                     [
                         summitReceiver.address,
@@ -1518,7 +1527,7 @@ describe("Summit", function () {
                 ));
 
                 // toggle access again for reader for new article, first unknown 
-                await summit.write.setAccessStatus([articleReader.account.address, 0]);
+                await summit.write.setAccessStatus([articleReader.account.address, 0], {account: accessController.account});
                 await expect(bnmToken.write.transferAndCall(
                     [
                         summitReceiver.address,
@@ -1531,7 +1540,7 @@ describe("Summit", function () {
                 )).to.be.rejectedWith("NotAllowedAccess");
 
                 // then banned 
-                await summit.write.setAccessStatus([articleReader.account.address, 2]);
+                await summit.write.setAccessStatus([articleReader.account.address, 2], {account: accessController.account});
                 await expect(bnmToken.write.transferAndCall(
                     [
                         summitReceiver.address,
@@ -1544,7 +1553,7 @@ describe("Summit", function () {
                 )).to.be.rejectedWith("NotAllowedAccess");
 
                 // and finally allowed 
-                await summit.write.setAccessStatus([articleReader.account.address, 1]);
+                await summit.write.setAccessStatus([articleReader.account.address, 1], {account: accessController.account});
                 await expect(bnmToken.write.transferAndCall(
                     [
                         summitReceiver.address,

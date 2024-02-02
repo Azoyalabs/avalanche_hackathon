@@ -34,7 +34,9 @@ contract SummitReceiver is
         address _target,
         address _paymentToken
     ) CCIPReceiver(router) {
-        target = Summit(_target); //new MediumAccess();
+        if (_target != address(0)) {
+            target = Summit(_target); //new MediumAccess();
+        }
         paymentToken = _paymentToken;
     }
 
