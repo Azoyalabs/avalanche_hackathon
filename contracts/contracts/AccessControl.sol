@@ -7,6 +7,7 @@ enum AccessStatus {
     Banned
 }
 
+
 contract AccessControl {
     address public controlAdmin;
     mapping(address => AccessStatus) public accessStatusTracker;
@@ -17,11 +18,13 @@ contract AccessControl {
         controlAdmin = _controlAdmin;
     }
 
-    function setStatus(address user, AccessStatus newStatus) internal {
+    function setAccessStatus(address user, AccessStatus newStatus) external {
+        require(msg.sender == controlAdmin, "Unauthorized");
         accessStatusTracker[user] = newStatus;
     }
 
-    function _setAccessControlAdmin(address newAdmin) internal {
+    function setAccessControlAdmin(address newAdmin) external {
+        require(msg.sender == controlAdmin, "Unauthorized");
         controlAdmin = newAdmin;
     }
 }

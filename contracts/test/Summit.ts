@@ -43,6 +43,11 @@ describe("Summit", function () {
         // update target in ccipReceiver 
         await summitReceiver.write.updateTarget([summit.address]);
 
+        // allow all addresses in AccessControl 
+        for (const currAddr of [contractOwner, articleWriter, articleReader, userLambda, userLambda2]) {
+            await summit.write.setAccessStatus([currAddr.account.address, 1]);
+        }
+
 
         const publicClient = await hre.viem.getPublicClient();
 
@@ -871,7 +876,7 @@ describe("Summit", function () {
                 await summit.read.aggregated([articleWriter.account.address])
             ).to.be.eq(articlePrice * BigInt(readerAccounts.length));
 
-            
+
             // and now try to withdraw and check final balance 
             await summit.write.withdraw(
                 {
@@ -942,7 +947,7 @@ describe("Summit", function () {
                 await summit.read.aggregated([articleWriter.account.address])
             ).to.be.eq(supportPrice * BigInt(readerAccounts.length));
 
-            
+
             // and now try to withdraw and check final balance 
             await summit.write.withdraw(
                 {
@@ -959,6 +964,431 @@ describe("Summit", function () {
             expect(
                 await summit.read.aggregated([articleWriter.account.address])
             ).to.be.eq(BigInt(0));
+        })
+    })
+
+
+    describe("Access Control", function () {
+        describe("General checks", function () {
+            it("Can change access status", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+
+                for (let i = 0; i < 3; i++) {
+                    await summit.write.setAccessStatus([articleWriter.account.address, i]);
+                    expect(await summit.read.accessStatusTracker([articleWriter.account.address])).to.be.eq(i);
+                }
+            })
+
+            it("Unauthorized address cannot change access status", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+
+                await expect(summit.write.setAccessStatus([articleWriter.account.address, 1], { account: userLambda.account })).to.be.rejectedWith("Unauthorized");
+            })
+
+            it("Can modify access controller", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+
+                // assert that userLambda cannot call this function 
+                await expect(summit.write.setAccessStatus(
+                    [articleWriter.account.address, 1], 
+                    { account: userLambda.account })
+                ).to.be.rejectedWith("Unauthorized");
+
+                // modify the access control admin to userLambda
+                await summit.write.setAccessControlAdmin(
+                    [userLambda.account.address],
+                    { account: contractOwner.account }
+                );
+
+                // assert that userLambda can call the setAccess function
+                await expect(summit.write.setAccessStatus(
+                    [articleWriter.account.address, 1], 
+                    { account: userLambda.account })
+                );
+
+                // and the contractOwner cannot do so anymore 
+                await expect(summit.write.setAccessStatus(
+                    [articleWriter.account.address, 2], 
+                    { account: contractOwner.account })
+                ).to.be.rejectedWith("Unauthorized");
+            })
+
+            it("Can modify access controller", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+
+                await expect(summit.write.setAccessStatus(
+                    [articleWriter.account.address, 1], 
+                    { account: userLambda.account })
+                ).to.be.rejectedWith("Unauthorized");
+            })
+        })
+
+        describe("Writer tests", function () {
+            it("Unknown writer cannot mint", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+
+                // current status is allowed for all addresses, switch for articleWriter
+                await summit.write.setAccessStatus([articleWriter.account.address, 0]);
+
+                // get token id
+                const tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), false]
+                );
+
+                // and try to mint 
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                )).to.be.rejectedWith("NotAllowedAccess");
+            })
+
+            it("Banned writer cannot mint", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+
+                // current status is allowed for all addresses, switch for articleWriter
+                await summit.write.setAccessStatus([articleWriter.account.address, 2]);
+
+                // get token id
+                const tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), false]
+                );
+
+                // and try to mint 
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                )).to.be.rejectedWith("NotAllowedAccess");
+            })
+
+            it("Allowed writer can mint", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+
+                // current status is allowed for all addresses, switch for articleWriter
+                await summit.write.setAccessStatus([articleWriter.account.address, 1]);
+
+                // get token id
+                const tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), false]
+                );
+
+                // and try to mint 
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                ));
+            })
+
+            it("Complex access changes are consistent for writer", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+
+                // current status is allowed for all addresses, switch for articleWriter
+                await summit.write.setAccessStatus([articleWriter.account.address, 0]);
+
+                // get token id
+                let tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), false]
+                );
+
+                // and try to mint 
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                )).to.be.rejectedWith("NotAllowedAccess");
+
+                // then we toggle to allow writer to mint 
+                await summit.write.setAccessStatus([articleWriter.account.address, 1]);
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                ));
+
+                // toggle again for new article , first unknown 
+                tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(1), false]
+                );
+
+                await summit.write.setAccessStatus([articleWriter.account.address, 0]);
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                )).to.be.rejectedWith("NotAllowedAccess");
+
+                // then banned 
+                await summit.write.setAccessStatus([articleWriter.account.address, 2]);
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                )).to.be.rejectedWith("NotAllowedAccess");
+
+                // and finally allowed 
+                await summit.write.setAccessStatus([articleWriter.account.address, 1]);
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                ));
+            })
+        })
+
+
+        describe("Reader tests", function () {
+            it("Unknown reader cannot mint", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+
+                // current status is allowed for all addresses, switch for articleReader
+                await summit.write.setAccessStatus([articleReader.account.address, 0]);
+
+                // get token id
+                const tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), false]
+                );
+
+                // mint for writer
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                ));
+
+                // and try to mint for reader 
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                )).to.be.rejectedWith("NotAllowedAccess");
+            })
+
+            it("Banned reader cannot mint", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+
+                // current status is allowed for all addresses, switch for articleWriter
+                await summit.write.setAccessStatus([articleReader.account.address, 2]);
+
+                // get token id
+                const tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), false]
+                );
+
+                // mint for author
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                ));
+
+                // and try to mint for reader
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                )).to.be.rejectedWith("NotAllowedAccess");
+            })
+
+            it("Allowed reader can mint", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+
+                // current status is allowed for all addresses, switch for articleWriter
+                await summit.write.setAccessStatus([articleWriter.account.address, 1]);
+
+                // get token id
+                const tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), false]
+                );
+
+                // mint for author
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                ));
+
+                // and try to mint 
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                ));
+            })
+
+            it("Complex access changes are consistent for reader", async function () {
+                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
+
+                // current status is allowed for all addresses, switch for articleWriter
+                await summit.write.setAccessStatus([articleReader.account.address, 0]);
+
+                // get token id
+                let tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(0), false]
+                );
+
+                // mint for author
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                ))
+
+                // and try to mint for reader 
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                )).to.be.rejectedWith("NotAllowedAccess");
+
+                // then we toggle to allow reader to mint 
+                await summit.write.setAccessStatus([articleReader.account.address, 1]);
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                ));
+
+                // create new article 
+                tokenId = await summit.read.createTokenId(
+                    [articleWriter.account.address, BigInt(1), false]
+                );
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleWriter.account
+                    }
+                ));
+
+                // toggle access again for reader for new article, first unknown 
+                await summit.write.setAccessStatus([articleReader.account.address, 0]);
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                )).to.be.rejectedWith("NotAllowedAccess");
+
+                // then banned 
+                await summit.write.setAccessStatus([articleReader.account.address, 2]);
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                )).to.be.rejectedWith("NotAllowedAccess");
+
+                // and finally allowed 
+                await summit.write.setAccessStatus([articleReader.account.address, 1]);
+                await expect(bnmToken.write.transferAndCall(
+                    [
+                        summitReceiver.address,
+                        BigInt(0),
+                        bytesToHex(toBytes(tokenId))
+                    ],
+                    {
+                        account: articleReader.account
+                    }
+                ));
+            })
         })
     })
 })

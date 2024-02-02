@@ -14,7 +14,7 @@ import "./AccessControl.sol";
 import "./IdTracker.sol";
 import "./TokenUtils.sol";
 
-contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils { //, AccessControl {
+contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils, AccessControl {
     uint256 constant MAX_ARTICLE_ID = 1 << (96 - 1);
 
     uint256 public mintPrice;
@@ -30,7 +30,7 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils { 
     )
         ERC1155("") // "https://samplewebsite.org/api/{id}"
         Ownable(initialOwner)
-        //AccessControl(initialOwner)
+        AccessControl(initialOwner)
     {
         tokenReceiver = _tokenReceiver;
 
@@ -69,6 +69,10 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils { 
         // only the CCIP receiver can call this
         if (msg.sender != tokenReceiver) {
             revert Unauthorized();
+        }
+
+        if (accessStatusTracker[minter] != AccessStatus.Authorized) {
+            revert NotAllowedAccess(minter);
         }
 
         (address creator, uint articleId, bool isPaying) = parseTokenId(
