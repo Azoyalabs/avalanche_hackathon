@@ -108,22 +108,10 @@ describe("Summit", function () {
 
                         let tsTokenId = createTokenId(addr, articleId, isPaying);
                         expect(tokenId).to.eq(tsTokenId);
-
-                        /*
-                        let [parsedAddress, parsedArticleId, parsedIsPaying] = await summit.read.parseTokenId([tokenId]);
-                        expect(addr).to.eq(parsedAddress.toLowerCase());
-                        expect(articleId).to.eq(parsedArticleId)
-                        expect(isPaying).to.eq(parsedIsPaying);
-                        */
-
-
                     })
                 })
             })
-
         })
-
-
     })
 
     describe("Receiver", function () {
@@ -157,6 +145,40 @@ describe("Summit", function () {
                     account: userLambda.account
                 }
             )).to.be.rejectedWith("Unauthorized");
+        })
+
+        it("Summit should reject invalid receiver", async function () {
+            const { bnmToken, summit, summitReceiver, articleWriter, contractOwner, userLambda } = await loadFixture(deployContracts);
+
+            // set role for minting 
+            await bnmToken.write.grantMintRole([contractOwner.account.address]);
+            // mint tokens 
+            await bnmToken.write.mint([userLambda.account.address, BigInt(500)]);
+
+            // create a new receiver 
+            const invalidReceiver = await hre.viem.deployContract("SummitReceiver",
+                [contractOwner.account.address, summit.address, bnmToken.address], {
+            });
+
+            // we try with the transferAndCall 
+            // create tokenId for minting 
+            const tokenId = await summit.read.createTokenId(
+                [articleWriter.account.address, BigInt(0), false]
+            );
+
+            // try to call with invalid receiver 
+            await expect(bnmToken.write.transferAndCall(
+                [
+                    invalidReceiver.address,
+                    BigInt(100),
+                    bytesToHex(toBytes(tokenId))
+
+                ],
+                {
+                    account: userLambda.account
+                }
+            )).to.be.rejectedWith("Unauthorized");
+
         })
     })
 
@@ -990,7 +1012,7 @@ describe("Summit", function () {
 
                 // assert that userLambda cannot call this function 
                 await expect(summit.write.setAccessStatus(
-                    [articleWriter.account.address, 1], 
+                    [articleWriter.account.address, 1],
                     { account: userLambda.account })
                 ).to.be.rejectedWith("Unauthorized");
 
@@ -1002,23 +1024,14 @@ describe("Summit", function () {
 
                 // assert that userLambda can call the setAccess function
                 await expect(summit.write.setAccessStatus(
-                    [articleWriter.account.address, 1], 
+                    [articleWriter.account.address, 1],
                     { account: userLambda.account })
                 );
 
                 // and the contractOwner cannot do so anymore 
                 await expect(summit.write.setAccessStatus(
-                    [articleWriter.account.address, 2], 
+                    [articleWriter.account.address, 2],
                     { account: contractOwner.account })
-                ).to.be.rejectedWith("Unauthorized");
-            })
-
-            it("Can modify access controller", async function () {
-                const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2 } = await loadFixture(deployContracts);
-
-                await expect(summit.write.setAccessStatus(
-                    [articleWriter.account.address, 1], 
-                    { account: userLambda.account })
                 ).to.be.rejectedWith("Unauthorized");
             })
         })
