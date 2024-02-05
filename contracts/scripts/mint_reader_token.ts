@@ -1,4 +1,4 @@
-import { createWalletClient, createPublicClient, http } from "viem";
+import { createWalletClient, createPublicClient, http, toHex } from "viem";
 
 import { avalancheFuji } from 'viem/chains'
 import { mnemonicToAccount } from 'viem/accounts'
@@ -8,8 +8,10 @@ import { mnemonicToAccount } from 'viem/accounts'
 
 require('dotenv').config()
 
-import * as contractData from "../artifacts/contracts/MediumAccess.sol/MediumAccess.json";
-import { CONTRACT_ADDRESS } from "./constants";
+import * as contractData from "../artifacts/contracts/Summit.sol/Summit.json";
+import { CCIP_TESTNET_CONTRACTS_INFO, CONTRACT_ADDRESS } from "./constants";
+import { getContractAt } from "@nomicfoundation/hardhat-viem/types";
+import { stringToAddress } from "./utils";
 
 // console.log(process.env.ADMIN_PASSPHRASE)
 
@@ -39,13 +41,16 @@ async function main() {
         transport: http(avalancheFuji.rpcUrls.public.http[0])
     })
 
+    let summitContract = await getContractAt(
+        "Summit",
+        CONTRACT_ADDRESS
+    );
 
-    let tokenId = await publicClient.readContract({
-        address: CONTRACT_ADDRESS,
-        abi: contractData.abi,
-        functionName: "createTokenId",
-        args: [admin_account.address, BigInt(0), false],  // creator address, article id, is_paying
-    });
+    // use write account here instead of admin 
+    let tokenId = await summitContract.read.createTokenId(
+        [admin_account.address, BigInt(0), false]   
+    );
+    
 
     // get mint price if it's a paid article 
     let _mint_price = await publicClient.readContract({
@@ -55,14 +60,19 @@ async function main() {
         args: []
     }) 
 
+    const bnmContract = await getContractAt(
+        "BnMToken",
+        stringToAddress(CCIP_TESTNET_CONTRACTS_INFO.fuji.tokens["CCIP-BnM"])
+    );
 
-    const res = await wallet.writeContract({
-        address: CONTRACT_ADDRESS,
-        abi: contractData.abi,
-        functionName: "mint",
-        args: [user_account.address, tokenId, BigInt(1), "0x"],
-        account: user_account
-    })
+    let res = await bnmContract.write.transferAndCall(
+        [
+            "use address receiver here",
+            BigInt(0),
+            //bytesToHex(toBytes(tokenId))   
+            toHex(tokenId)         
+        ]
+    )
 
 
     return res

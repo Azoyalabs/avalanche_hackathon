@@ -10,9 +10,6 @@ import { getContractAt } from "@nomicfoundation/hardhat-viem/types";
 require('dotenv').config()
 
 
-const NEW_URI = "";
-
-
 async function main() {
     const account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
 
@@ -32,18 +29,16 @@ async function main() {
         }
     );
 
-
-    const res = await summitContract.write.setURI(
-        [NEW_URI],
+    const res = await summitContract.write.withdraw(
         {
             account: wallet.account
         }
-    );
+    )
 
     return res
 }
 
 
 main().then((res) => {
-    console.log(`setURI succeeded. Tx hash: ${res}`)
+    console.log(`Successful withdrawal with tx: ${res}`)
 })

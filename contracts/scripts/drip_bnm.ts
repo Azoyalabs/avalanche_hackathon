@@ -15,6 +15,7 @@ import { SUMMIT_DATA, SUMMIT_RECEIVER_DATA } from "./contracts_loader";
 import { CONTRACT_ADDRESS, CCIP_TESTNET_CONTRACTS_INFO } from "./constants";
 import { stringToAddress } from "./utils";
 import { getContractAt } from "@nomicfoundation/hardhat-viem/types";
+import { writeContract } from "viem/_types/actions/wallet/writeContract";
 
 // console.log(process.env.ADMIN_PASSPHRASE)
 
@@ -35,40 +36,35 @@ async function main() {
         }
     )
 
-    let summitContract = await getContractAt(
-        "Summit",
-        CONTRACT_ADDRESS
-    );
-
-    let tokenId = await summitContract.read.createTokenId(
-        [account.address, BigInt(0), false]   
-    );
-
-
-
-    /*
-    const res = await wallet.writeContract({
-        address: CONTRACT_ADDRESS,
-        abi: contractData.abi,
-        functionName: "mint",
-        args: [account.address, tokenId, BigInt(1), "0x"],
-        account
-    })
-    */
 
     const bnmContract = await getContractAt(
         "BnMToken",
         stringToAddress(CCIP_TESTNET_CONTRACTS_INFO.fuji.tokens["CCIP-BnM"])
     );
 
-    let res = await bnmContract.write.transferAndCall(
-        [
-            "use address receiver here",
-            BigInt(0),
-            //bytesToHex(toBytes(tokenId))   
-            toHex(tokenId)         
-        ]
-    )
+    const dripAbi = [{
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "drip",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }]
+
+    let res = wallet.writeContract(
+        {
+            address: bnmContract.address,
+            abi: dripAbi,
+            functionName: "drip",
+            args: [account.address],
+            account
+        }
+    );
 
 
     return res
@@ -76,5 +72,5 @@ async function main() {
 
 
 main().then((res) => {
-    console.log(`Mint succeeded. Tx hash: ${res}`)
+    console.log(`Drip succeeded. Tx hash: ${res}`)
 })

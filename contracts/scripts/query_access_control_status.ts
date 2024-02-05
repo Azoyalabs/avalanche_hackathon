@@ -10,9 +10,6 @@ import { getContractAt } from "@nomicfoundation/hardhat-viem/types";
 require('dotenv').config()
 
 
-const NEW_URI = "";
-
-
 async function main() {
     const account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
 
@@ -32,18 +29,19 @@ async function main() {
         }
     );
 
-
-    const res = await summitContract.write.setURI(
-        [NEW_URI],
+    const accessStatus = await summitContract.read.accessStatusTracker(
+        [
+            account.address
+        ],
         {
             account: wallet.account
         }
-    );
+    )
 
-    return res
+    return accessStatus
 }
 
 
-main().then((res) => {
-    console.log(`setURI succeeded. Tx hash: ${res}`)
+main().then((accessStatus) => {
+    console.log(`Access status for account is: ${accessStatus}`)
 })

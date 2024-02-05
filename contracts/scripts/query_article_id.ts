@@ -10,9 +10,6 @@ import { getContractAt } from "@nomicfoundation/hardhat-viem/types";
 require('dotenv').config()
 
 
-const NEW_URI = "";
-
-
 async function main() {
     const account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
 
@@ -32,18 +29,19 @@ async function main() {
         }
     );
 
-
-    const res = await summitContract.write.setURI(
-        [NEW_URI],
+    const articleId = await summitContract.read.idTracker(
+        [
+            account.address
+        ],
         {
             account: wallet.account
         }
-    );
+    )
 
-    return res
+    return articleId
 }
 
 
-main().then((res) => {
-    console.log(`setURI succeeded. Tx hash: ${res}`)
+main().then((articleId) => {
+    console.log(`Required article id for next article is: ${articleId}`)
 })
