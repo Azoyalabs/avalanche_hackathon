@@ -2,9 +2,10 @@
 	import { page } from '$app/stores';
 	import AvatarGenerator from '$lib/ui/app/AvatarGenerator/AvatarGenerator.svelte';
 	import SubscriptionCard from '$lib/ui/app/SubscriptionCard/SubscriptionCard.svelte';
-	import { writable } from 'svelte/store';
+	import { derived, writable } from 'svelte/store';
 	import { CONTEXT_KEY, LayoutLink } from './context';
 	import { onMount, setContext } from 'svelte';
+	import { getUserStoreState } from '$lib/state';
 
 	const authorName = 'Author Name';
 
@@ -15,11 +16,12 @@
 		return `/users/${$page.params.name}/${link}`;
 	};
 
-
 	// TODO: handle has domain
-	const domain = {}
-
-	
+	const domain = {};
+	const userStore = getUserStoreState();
+	$: isCurrentUser = derived(userStore.address, ($address) => {
+		return $address === $page.params.name;
+	});
 </script>
 
 <div class="container space-y-8">
@@ -65,21 +67,23 @@
 							data-active={$currentLink === LayoutLink.Stats}
 							class="px-1 pb-4 text-sm font-medium border-b-2 whitespace-nowrap">Stats</a
 						>
-						<a
-							href={LINK_TO(LayoutLink.Profile)}
-							data-sveltekit-noscroll
-							data-active={$currentLink === LayoutLink.Profile}
-							class="px-1 pb-4 text-sm font-medium border-b-2 whitespace-nowrap"
-							>Profile (if connected?)</a
-						>
+						{#if $isCurrentUser}
+							<a
+								href={LINK_TO(LayoutLink.Profile)}
+								data-sveltekit-noscroll
+								data-active={$currentLink === LayoutLink.Profile}
+								class="px-1 pb-4 text-sm font-medium border-b-2 whitespace-nowrap">Profile</a
+							>
+						{/if}
 					</nav>
 				</div>
 			</div>
 		</div>
 	</section>
 
-	<SubscriptionCard name={$page.params.name}></SubscriptionCard>
-
+	{#if $currentLink !== LayoutLink.Profile}
+		<SubscriptionCard name={$page.params.name}></SubscriptionCard>
+	{/if}
 	<section>
 		<slot />
 	</section>

@@ -1,17 +1,12 @@
 <script lang="ts">
+	import '../app.pcss';
 	import { navigating } from '$app/stores';
 	import { Button } from '$lib/ui/shadcn/ui/button';
 	import { Toaster } from '$lib/ui/shadcn/ui/sonner';
 	import { MountainSnow } from 'lucide-svelte';
-
-	import '../app.pcss';
-	import { onMount } from 'svelte';
-
 	import {
 		ParticleConnect,
-		evmWallets,
 		metaMask,
-		walletconnect,
 		type ConnectConfig,
 		type EVMProvider
 	} from '@particle-network/connect';
@@ -23,65 +18,67 @@
 	} from '$env/static/public';
 	import {
 		AvalancheTestnet,
-		chains,
 		type Chain,
 		BNBChainTestnet,
-		Ethereum,
 		EthereumGoerli
 	} from '@particle-network/chains';
 
-	import { createWalletClient, custom } from 'viem';
 	import * as Drawer from '$lib/ui/shadcn/ui/drawer';
 	import AvatarGenerator from '$lib/ui/app/AvatarGenerator/AvatarGenerator.svelte';
 
-	onMount(() => {
-		// TODO: support other chains for crosschain minting
-		const config: ConnectConfig = {
-			projectId: PUBLIC_PARTICLE_PROJECT_ID,
-			clientKey: PUBLIC_PARTICLE_CLIENT_KEY,
-			appId: PUBLIC_PARTICLE_APP_ID,
-			chains: [
-				Ethereum as Chain,
-				EthereumGoerli as Chain,
-				AvalancheTestnet as Chain,
-				BNBChainTestnet as Chain
-			],
-			wallets: [
-				metaMask({
-					projectId: import.meta.env.VITE_APP_WALLETCONNECT_PROJECT_ID,
-					showQrModal: false
-				}),
-				walletconnect({
-					projectId: import.meta.env.VITE_APP_WALLETCONNECT_PROJECT_ID,
-					showQrModal: true
-				})
-			]
-		};
-
-		const connect = new ParticleConnect(config);
-
-		/*
-		console.dir(connect.walletMetas());
-		connect.connect().then((p) => {
-			const client = createWalletClient({
-				transport: custom(p as EVMProvider),
-				chain: {}
-			});
-
-			console.dir(client.chain);
-
-			client.getAddresses().then((a) => {
-				console.dir(a);
-			});
-		});
-		//		const provider = connect.connect();
-		*/
-	});
 	import * as Sheet from '$lib/ui/shadcn/ui/sheet';
 	import SheetBody from '$lib/ui/app/SheetBody/SheetBody.svelte';
+	import { setUserState, setUserStoreState } from '$lib/state';
+	import { derived } from 'svelte/store';
+	import { APP_LINKS } from '$lib/links';
+	import { goto } from '$app/navigation';
+	import Address from '$lib/ui/app/Address/Address.svelte';
+	import { delay } from '$lib/utils';
 
-	const connected = false;
+	// TODO: support other chains for crosschain minting
+	const config: ConnectConfig = {
+		projectId: PUBLIC_PARTICLE_PROJECT_ID,
+		clientKey: PUBLIC_PARTICLE_CLIENT_KEY,
+		appId: PUBLIC_PARTICLE_APP_ID,
+		chains: [EthereumGoerli as Chain, AvalancheTestnet as Chain, BNBChainTestnet as Chain]
+	};
+
+	const userStore = setUserStoreState(null);
+	$: address = derived(userStore.address, ($address) => $address);
+	$: console.log($address);
+
+	async function connectToParticle() {
+		console.dir(config);
+		const particle = new ParticleConnect(config);
+		const provider = (await particle.connect()) as EVMProvider;
+
+		const store = await userStore.connect(provider);
+
+		// Wait for address query
+		await delay(200);
+		await fetch('/auth', {
+			body: JSON.stringify({
+				address: $address
+			}),
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			method: 'POST'
+		});
+	}
+
+	async function disconnect() {
+		if (userStore) {
+			userStore.disconnect();
+			setUserState(null);
+		}
+		//await $PROVIDER?.disconnect()
+		//$PROVIDER = null;
+	}
+
+	$: isConnected = derived(userStore.isConnected, ($connection) => $connection);
 </script>
+
 <Toaster />
 
 <header class="py-3 border-b">
@@ -90,8 +87,10 @@
 			<img src="/favicon.png" alt="logo" class="w-8 h-8" />
 			<span class="ml-2 text-2xl font-black uppercase font-nunito">Summit</span>
 		</a>
-		<div>
-			{#if connected}
+		<div class="flex items-center space-x-3">
+			{#if $isConnected}
+			<Button href="/articles/new" variant="default">Start Writing</Button>
+
 				<Sheet.Root>
 					<Sheet.Trigger class="hidden md:block">
 						<Button size="icon" variant="ghost" class="rounded-full">
@@ -117,14 +116,27 @@
 									></AvatarGenerator>
 								</div>
 								<div>
-									<Sheet.Title>0x18979...absje6</Sheet.Title>
-									<Sheet.Description>View Profile</Sheet.Description>
+									<Sheet.Title>
+										<Address address={$address}></Address>
+									</Sheet.Title>
+									<Sheet.Description asChild>
+										<Sheet.Close asChild let:builder>
+											<Button
+												href={APP_LINKS.USER_PROFILE($address)}
+												builders={[builder]}
+												variant="ghost"
+												size="sm"
+												class="px-0 py-0 text-muted-foreground hover:bg-transparent"
+												>View Profile</Button
+											>
+										</Sheet.Close>
+									</Sheet.Description>
 								</div>
 							</div>
 						</Sheet.Header>
 						<SheetBody></SheetBody>
 						<Sheet.Footer>
-							<Button variant="ghost">Disconnect</Button>
+							<Button variant="ghost" on:click={() => disconnect()}>Disconnect</Button>
 						</Sheet.Footer>
 					</Sheet.Content>
 				</Sheet.Root>
@@ -159,17 +171,16 @@
 						</Drawer.Header>
 						<SheetBody></SheetBody>
 						<Drawer.Footer>
-							<Button variant="ghost">Disconnect</Button>
+							<Button variant="ghost" on:click={() => disconnect()}>Disconnect</Button>
 						</Drawer.Footer>
 					</Drawer.Content>
 				</Drawer.Root>
 			{:else}
-				<Button>Connect wallet</Button>
+				<Button on:click={connectToParticle}>Connect wallet</Button>
 			{/if}
 		</div>
 	</div>
 </header>
-
 
 <div class="flex-grow">
 	{#if $navigating}

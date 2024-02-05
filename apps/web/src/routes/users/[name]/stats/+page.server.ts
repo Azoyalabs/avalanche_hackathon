@@ -5,9 +5,9 @@ import { COVALENT_API_KEY } from "$env/static/private";
 
 export const load = (async ({params}) => {
     const client = new CovalentClient(COVALENT_API_KEY);
-    const resp = await client.BalanceService.getTokenBalancesForWalletAddress(Chains.AVALANCHE_TESTNET, params.name);
+    //const resp = await client.BalanceService.getTokenBalancesForWalletAddress(Chains.AVALANCHE_TESTNET, params.name);
     // resp.data.items.map((i) => console.dir(i))
-    console.dir(resp);
+    //console.dir(resp);
 
     //client.NftService.checkOwnershipInNft(Chains.AVALANCHE_TESTNET)
 
