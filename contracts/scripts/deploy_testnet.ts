@@ -13,7 +13,7 @@ import { mnemonicToAccount } from 'viem/accounts'
 
 require('dotenv').config()
 
-import * as contractData from "../artifacts/contracts/MediumAccess.sol/MediumAccess.json";
+import * as contractData from "../artifacts/contracts/Summit.sol/Summit.json";
 
 // console.log(process.env.ADMIN_PASSPHRASE)
 
