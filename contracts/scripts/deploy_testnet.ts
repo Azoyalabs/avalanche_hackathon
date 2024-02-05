@@ -1,5 +1,5 @@
 import { viem } from "hardhat";
-import { getAddress, parseGwei, Account, createWalletClient } from "viem";
+import { getAddress, parseGwei, Account, createWalletClient, getContractAddress } from "viem";
 
 import { avalancheFuji } from 'viem/chains'
 
@@ -13,13 +13,18 @@ import { mnemonicToAccount } from 'viem/accounts'
 
 require('dotenv').config()
 
-import * as contractData from "../artifacts/contracts/Summit.sol/Summit.json";
+import * as summitContractData from "../artifacts/contracts/Summit.sol/Summit.json";
+
+import * as tokenReceiverData from "../artifacts/contracts/SummitReceiver.sol/SummitReceiver.json";
 
 // console.log(process.env.ADMIN_PASSPHRASE)
 
+import { CCIP_TESTNET_CONTRACTS_INFO } from "./constants";
+import { getTransactionReceipt } from "viem/_types/actions/public/getTransactionReceipt";
+
 async function main() {
     const account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
-    console.log(account.address)
+    const accessController = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
 
     const wallet = createWalletClient(
         {
@@ -29,25 +34,62 @@ async function main() {
         }
     )
 
-    /*
-    // read contract bytecode 
-    const bytecode = fs.readFileSync("artifacts/contracts/MediumAccess.sol", "binary");
-
-    // read abi 
-    const abi = JSON.parse(fs.readFileSync("../bin/contracts/MediumAccess.abi", "utf-8"))
-    */
-
-
-    let res = await wallet.deployContract(
+    // deploy the token receiver 
+    let txHash = await wallet.deployContract(
         {
-            abi: contractData.abi, //abi,
+            abi: tokenReceiverData.abi,
             account,
-            args: [account.address, BigInt(100)],
-            bytecode: `0x${contractData.bytecode.slice(2, contractData.bytecode.length)}` //`0x${bytecode}`
+            args: [
+                CCIP_TESTNET_CONTRACTS_INFO.fuji.router, 
+                "0x0000000000000000000000000000000000000000", 
+                CCIP_TESTNET_CONTRACTS_INFO.fuji.tokens["CCIP-BnM"]
+            ],
+            bytecode: `0x${tokenReceiverData.bytecode.slice(2, tokenReceiverData.bytecode.length)}`
         }
     )
 
-    return res
+    // get instantiation address 
+    let receipt = await getTransactionReceipt(
+        wallet,
+        {
+            hash: txHash
+        }
+    );
+
+    let receiverAddress = receipt.contractAddress;
+    
+
+
+    let txHashSummit = await wallet.deployContract(
+        {
+            abi: summitContractData.abi, //abi,
+            account,
+            args: [account.address, accessController.address, receiverAddress, BigInt(100), "INSERT_URI_HERE"],
+            // need to prune 0x from bytecode to satisfy type requirement 
+            bytecode: `0x${summitContractData.bytecode.slice(2, summitContractData.bytecode.length)}` //`0x${bytecode}`
+        }
+    )
+
+    // get instantiation address 
+    let receiptSummit = await getTransactionReceipt(
+        wallet,
+        {
+            hash: txHashSummit
+        }
+    );
+
+    let summitAddress = receiptSummit.contractAddress;
+
+
+    // update target in receiver 
+    let receiverContract = await viem.getContractAt("SummitReceiver", receiverAddress!);
+    await receiverContract.write.updateTarget([summitAddress!]);
+
+
+    return {
+        summitAddress,
+        receiverAddress
+    }
 }
 
 
