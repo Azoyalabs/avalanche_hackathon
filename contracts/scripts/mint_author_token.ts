@@ -9,18 +9,24 @@ import { mnemonicToAccount } from 'viem/accounts'
 require('dotenv').config()
 
 
-import { SUMMIT_DATA, SUMMIT_RECEIVER_DATA } from "./contracts_loader";
+//import { SUMMIT_DATA, SUMMIT_RECEIVER_DATA } from "./contracts_loader";
+import * as bnmTokenData from "../artifacts/contracts/BnMToken.sol/BnMToken.json";
 
+import * as SUMMIT_DATA from "../artifacts/contracts/Summit.sol/Summit.json";
 
-import { CONTRACT_ADDRESS, CCIP_TESTNET_CONTRACTS_INFO } from "./constants";
+import { SUMMIT_ADDRESS, RECEIVER_ADDRESS, CCIP_TESTNET_CONTRACTS_INFO } from "./constants";
 import { stringToAddress } from "./utils";
 import { getContractAt } from "@nomicfoundation/hardhat-viem/types";
 
-// console.log(process.env.ADMIN_PASSPHRASE)
+import * as viem from "viem";
+import { SUMMIT_ABI } from "./contracts_loader";
+
+import { abi as summitoAbi } from "../artifacts/contracts/Summit.sol/Summit.json";
+
+import { summitAbi } from "../generated/contractAbis";
 
 async function main() {
     const account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
-    console.log(account.address)
 
     const publicClient = createPublicClient({
         chain: avalancheFuji,
@@ -35,15 +41,20 @@ async function main() {
         }
     )
 
-    let summitContract = await getContractAt(
-        "Summit",
-        CONTRACT_ADDRESS
-    );
+
+    let summitContract = viem.getContract({
+        abi: summitAbi, //SUMMIT_ABI, //SUMMIT_DATA.abi,
+        address: SUMMIT_ADDRESS,
+        publicClient: publicClient,
+        walletClient: wallet
+        //publicClient: publicClient
+    })
 
     let tokenId = await summitContract.read.createTokenId(
         [account.address, BigInt(0), false]   
     );
 
+    console.log(tokenId)
 
 
     /*
@@ -55,18 +66,19 @@ async function main() {
         account
     })
     */
+    const bnmContract = viem.getContract({
+        abi: bnmTokenData.abi,
+        address: stringToAddress(CCIP_TESTNET_CONTRACTS_INFO.fuji.tokens["CCIP-BnM"]),
+        walletClient: wallet
+    })    
 
-    const bnmContract = await getContractAt(
-        "BnMToken",
-        stringToAddress(CCIP_TESTNET_CONTRACTS_INFO.fuji.tokens["CCIP-BnM"])
-    );
 
     let res = await bnmContract.write.transferAndCall(
         [
-            "use address receiver here",
+            RECEIVER_ADDRESS,
             BigInt(0),
-            //bytesToHex(toBytes(tokenId))   
-            toHex(tokenId)         
+            bytesToHex(toBytes(tokenId))   
+            //toHex(tokenId)         
         ]
     )
 

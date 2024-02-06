@@ -4,15 +4,18 @@ import { avalancheFuji } from 'viem/chains'
 import { mnemonicToAccount } from 'viem/accounts'
 
 import * as contractData from "../artifacts/contracts/Summit.sol/Summit.json";
-import { CONTRACT_ADDRESS } from "./constants";
+import { SUMMIT_ADDRESS } from "./constants";
 import { getContractAt } from "@nomicfoundation/hardhat-viem/types";
+
+import * as viem from "viem";
+import { SUMMIT_DATA } from "./contracts_loader";
 
 require('dotenv').config()
 
 
 async function main() {
     const userAccount = mnemonicToAccount(process.env.USER_PASSPHRASE!!)
-    const accessControllerAccount = mnemonicToAccount(process.env.ACCESS_CONTROLLER_PASSPHRASE!!)
+    const accessControllerAccount = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!);   //process.env.ACCESS_CONTROLLER_PASSPHRASE!!)
 
 
     const wallet = createWalletClient(
@@ -23,19 +26,17 @@ async function main() {
         }
     )
 
-    let summitContract = await getContractAt(
-        "Summit",
-        CONTRACT_ADDRESS,
-        {
-            walletClient: wallet
-        }
-    );
-
-    // set as banned
+    let summitContract = viem.getContract({
+        abi: SUMMIT_DATA.abi,
+        address: SUMMIT_ADDRESS,
+        walletClient: wallet
+        //publicClient: publicClient
+    })
+    // set as allowed
     const res = await summitContract.write.setAccessStatus(
         [
-            userAccount.address,
-            2
+            accessControllerAccount.address,
+            1
         ],
         {
             account: wallet.account

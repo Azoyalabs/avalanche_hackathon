@@ -11,12 +11,12 @@ require('dotenv').config()
 
 import { SUMMIT_DATA, SUMMIT_RECEIVER_DATA } from "./contracts_loader";
 
+import * as bnmTokenData from "../artifacts/contracts/BnMToken.sol/BnMToken.json";
 
 import { CCIP_TESTNET_CONTRACTS_INFO } from "./constants";
 import { stringToAddress } from "./utils";
-import { getContractAt } from "@nomicfoundation/hardhat-viem/types";
-import { writeContract } from "viem/_types/actions/wallet/writeContract";
 
+import * as viem from "viem";
 
 
 async function main() {
@@ -37,10 +37,11 @@ async function main() {
     )
 
 
-    const bnmContract = await getContractAt(
-        "BnMToken",
-        stringToAddress(CCIP_TESTNET_CONTRACTS_INFO.fuji.tokens["CCIP-BnM"])
-    );
+    const bnmContract = viem.getContract({
+        abi: bnmTokenData.abi,
+        address: stringToAddress(CCIP_TESTNET_CONTRACTS_INFO.fuji.tokens["CCIP-BnM"]),
+        walletClient: wallet
+    })    
 
     const dripAbi = [{
         "inputs": [
