@@ -126,7 +126,7 @@ describe("Summit", function () {
     describe("Receiver", function () {
         it("Receiver should reject payment from non-target token", async function () {
             const { bnmToken, summit, summitReceiver, articleWriter, contractOwner, userLambda } = await loadFixture(deployContracts);
-
+            
             // create a new token 
             const invalidToken = await hre.viem.deployContract("BnMToken");
 

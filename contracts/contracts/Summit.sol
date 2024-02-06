@@ -4,6 +4,9 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+// import "@openzeppelin/contracts/utils/Strings.sol";
+
+
 // import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 // import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 // import "@chainlink/contracts-ccip/src/v0.8/shared/access/OwnerIsCreator.sol";
@@ -27,9 +30,9 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils, A
         address accessController,
         address _tokenReceiver,
         uint256 _mintPrice,
-        string memory _uri
+        string memory uri_
     )
-        ERC1155(_uri) // "https://samplewebsite.org/api/{id}"
+        ERC1155(uri_) // "https://samplewebsite.org/api/{id}"
         Ownable(initialOwner)
         AccessControl(accessController)
     {
@@ -38,6 +41,15 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils, A
         // price is in wei
         mintPrice = _mintPrice;
     }
+
+    /*
+    string private _uri;
+
+    function uri(uint256 id) override public view returns (string memory) {
+        string memory stringId = string(abi.encode(id));
+        return string(abi.encodePacked(_uri, stringId));
+    }
+    */
 
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);

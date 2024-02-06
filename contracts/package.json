@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "deploy": "esrun scripts/deploy_testnet.ts",
+    "drip": "esrun scripts/drip_bnm.ts",
     "mint-author": "esrun scripts/mint_author_token.ts",
     "mint-reader": "esrun scripts/mint_reader_token.ts"
   },
@@ -13,7 +14,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "summit-utils": "workspace:*",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.3",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
     "@nomicfoundation/hardhat-toolbox-viem": "^2.0.0",
@@ -24,10 +24,12 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.5",
     "chai": "^4.2.0",
+    "dotenv": "^16.4.1",
     "esrun": "^3.2.26",
     "hardhat": "^2.19.4",
     "hardhat-gas-reporter": "^1.0.8",
     "solidity-coverage": "^0.8.5",
+    "summit-utils": "workspace:*",
     "ts-node": "^10.9.2",
     "typescript": "~5.0.4",
     "viem": "^1.15.1"

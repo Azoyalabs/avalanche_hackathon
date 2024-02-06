@@ -1,10 +1,9 @@
-import { viem } from "hardhat";
-import { getAddress, parseGwei, Account, createWalletClient, getContractAddress } from "viem";
+import { getAddress, parseGwei, Account, createWalletClient, getContractAddress, createPublicClient } from "viem";
 
 import { avalancheFuji } from 'viem/chains'
 
 import { http } from 'viem'
-
+import * as viem from 'viem';
 
 import { mnemonicToAccount } from 'viem/accounts'
 
@@ -21,14 +20,26 @@ import * as tokenReceiverData from "../artifacts/contracts/SummitReceiver.sol/Su
 
 import { SUMMIT_DATA, SUMMIT_RECEIVER_DATA } from "./contracts_loader";
 
+//import * as SUMMIT_DATA from "../artifacts/contracts/Summit.sol/Summit.json";
+//import * as SUMMIT_RECEIVER_DATA from "../artifacts/contracts/SummitReceiver.sol/SummitReceiver.json";
+
 // console.log(process.env.ADMIN_PASSPHRASE)
 
 import { CCIP_TESTNET_CONTRACTS_INFO } from "./constants";
-import { getTransactionReceipt } from "viem/_types/actions/public/getTransactionReceipt";
+
+// changer ID dans le contrat
+const URI = "https://avalanche-hackathon-web.vercel.app/api/nfts/" 
+
 
 async function main() {
     const account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
     const accessController = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
+
+
+    const publicClient = createPublicClient({
+        chain: avalancheFuji,
+        transport: http(avalancheFuji.rpcUrls.public.http[0])
+    })
 
     const wallet = createWalletClient(
         {
@@ -52,15 +63,15 @@ async function main() {
         }
     )
 
+
     // get instantiation address 
-    let receipt = await getTransactionReceipt(
-        wallet,
+    let receipt = await publicClient.waitForTransactionReceipt(
         {
             hash: txHash
         }
     );
 
-    let receiverAddress = receipt.contractAddress;
+    let receiverAddress = receipt!.contractAddress;
     
 
 
@@ -68,15 +79,14 @@ async function main() {
         {
             abi: SUMMIT_DATA.abi, //abi,
             account,
-            args: [account.address, accessController.address, receiverAddress, BigInt(100), "INSERT_URI_HERE"],
+            args: [account.address, accessController.address, receiverAddress, BigInt(100), URI],
             // need to prune 0x from bytecode to satisfy type requirement 
             bytecode: `0x${SUMMIT_DATA.bytecode.slice(2, SUMMIT_DATA.bytecode.length)}` //`0x${bytecode}`
         }
     )
 
     // get instantiation address 
-    let receiptSummit = await getTransactionReceipt(
-        wallet,
+    let receiptSummit = await publicClient.waitForTransactionReceipt(
         {
             hash: txHashSummit
         }
@@ -86,7 +96,12 @@ async function main() {
 
 
     // update target in receiver 
-    let receiverContract = await viem.getContractAt("SummitReceiver", receiverAddress!);
+    let receiverContract = viem.getContract({
+        abi: SUMMIT_RECEIVER_DATA.abi,
+        address: receiverAddress!,
+        walletClient: wallet
+    })    
+
     await receiverContract.write.updateTarget([summitAddress!]);
 
 
@@ -98,5 +113,5 @@ async function main() {
 
 
 main().then((res) => {
-    console.log(`Instantiation succeeded. Tx hash: ${res}`)
+    console.log(`Instantiation succeeded. Receiver at address: ${res.receiverAddress}, Summit at address: ${res.summitAddress}`)
 })

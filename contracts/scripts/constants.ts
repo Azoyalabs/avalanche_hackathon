@@ -1,7 +1,9 @@
 
 
-export const CONTRACT_ADDRESS = "0xfF4716b2a09D9CD05Bae2FE265A2C6b7B1e31a3F"
+// export const CONTRACT_ADDRESS = "0xfF4716b2a09D9CD05Bae2FE265A2C6b7B1e31a3F"
 
+export const SUMMIT_ADDRESS = "0x30cdaa09e7a763ca2521fe6a9710776bd7a746e6"
+export const RECEIVER_ADDRESS = "0xd3d7cd1107fe49720eb6acfd0c7c33d8a26f467f"
 
 /// Taken from: https://docs.chain.link/ccip/supported-networks/v1_2_0/testnet
 export const CCIP_TESTNET_CONTRACTS_INFO = {
