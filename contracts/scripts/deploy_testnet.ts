@@ -7,23 +7,13 @@ import * as viem from 'viem';
 
 import { mnemonicToAccount } from 'viem/accounts'
 
-//import * as fs from 'node:fs';
 
 
 require('dotenv').config()
 
-/*
-import * as summitContractData from "../artifacts/contracts/Summit.sol/Summit.json";
-
-import * as tokenReceiverData from "../artifacts/contracts/SummitReceiver.sol/SummitReceiver.json";
-*/
 
 import { SUMMIT_DATA, SUMMIT_RECEIVER_DATA } from "./contracts_loader";
 
-//import * as SUMMIT_DATA from "../artifacts/contracts/Summit.sol/Summit.json";
-//import * as SUMMIT_RECEIVER_DATA from "../artifacts/contracts/SummitReceiver.sol/SummitReceiver.json";
-
-// console.log(process.env.ADMIN_PASSPHRASE)
 
 import { CCIP_TESTNET_CONTRACTS_INFO } from "./constants";
 

@@ -3,12 +3,11 @@ import { createWalletClient, createPublicClient, http } from "viem";
 import { avalancheFuji } from 'viem/chains'
 import { mnemonicToAccount } from 'viem/accounts'
 
-import * as contractData from "../artifacts/contracts/Summit.sol/Summit.json";
 import { SUMMIT_ADDRESS } from "./constants";
-import { getContractAt } from "@nomicfoundation/hardhat-viem/types";
+
+import { summitAbi } from "../generated/contractAbis";
 
 import * as viem from "viem";
-import { SUMMIT_DATA } from "./contracts_loader";
 
 require('dotenv').config()
 
@@ -27,7 +26,7 @@ async function main() {
     )
 
     let summitContract = viem.getContract({
-        abi: SUMMIT_DATA.abi,
+        abi: summitAbi,
         address: SUMMIT_ADDRESS,
         walletClient: wallet
         //publicClient: publicClient

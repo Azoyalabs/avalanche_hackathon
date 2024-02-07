@@ -9,7 +9,6 @@ import { mnemonicToAccount } from 'viem/accounts'
 require('dotenv').config()
 
 
-import { SUMMIT_DATA, SUMMIT_RECEIVER_DATA } from "./contracts_loader";
 
 import * as bnmTokenData from "../artifacts/contracts/BnMToken.sol/BnMToken.json";
 

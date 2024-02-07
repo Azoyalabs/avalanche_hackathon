@@ -8,10 +8,11 @@ import { mnemonicToAccount } from 'viem/accounts'
 
 require('dotenv').config()
 
-import * as contractData from "../artifacts/contracts/Summit.sol/Summit.json";
-import { CCIP_TESTNET_CONTRACTS_INFO, CONTRACT_ADDRESS } from "./constants";
-import { getContractAt } from "@nomicfoundation/hardhat-viem/types";
+import { CCIP_TESTNET_CONTRACTS_INFO, RECEIVER_ADDRESS, SUMMIT_ADDRESS } from "./constants";
 import { stringToAddress } from "./utils";
+import { bnMTokenAbi, summitAbi } from "../generated/contractAbis";
+
+import * as viem from "viem";
 
 // console.log(process.env.ADMIN_PASSPHRASE)
 
@@ -41,10 +42,12 @@ async function main() {
         transport: http(avalancheFuji.rpcUrls.public.http[0])
     })
 
-    let summitContract = await getContractAt(
-        "Summit",
-        CONTRACT_ADDRESS
-    );
+    let summitContract = viem.getContract({
+        abi: summitAbi, //SUMMIT_ABI, //SUMMIT_DATA.abi,
+        address: SUMMIT_ADDRESS,
+        walletClient: wallet,
+        publicClient: publicClient
+    })
 
     // use write account here instead of admin 
     let tokenId = await summitContract.read.createTokenId(
@@ -53,21 +56,18 @@ async function main() {
     
 
     // get mint price if it's a paid article 
-    let _mint_price = await publicClient.readContract({
-        address: CONTRACT_ADDRESS,
-        abi: contractData.abi,
-        functionName: "mintPrice",
-        args: []
+    let _mint_price = await summitContract.read.mintPrice();
+
+    const bnmContract = viem.getContract({
+        abi: bnMTokenAbi, //SUMMIT_ABI, //SUMMIT_DATA.abi,
+        address: stringToAddress(CCIP_TESTNET_CONTRACTS_INFO.fuji.tokens["CCIP-BnM"]),
+        walletClient: wallet,
+        publicClient: publicClient
     }) 
-
-    const bnmContract = await getContractAt(
-        "BnMToken",
-        stringToAddress(CCIP_TESTNET_CONTRACTS_INFO.fuji.tokens["CCIP-BnM"])
-    );
-
+    
     let res = await bnmContract.write.transferAndCall(
         [
-            "use address receiver here",
+            RECEIVER_ADDRESS,
             BigInt(0),
             //bytesToHex(toBytes(tokenId))   
             toHex(tokenId)         
