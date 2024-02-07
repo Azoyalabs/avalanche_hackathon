@@ -58,3 +58,32 @@ export const flyAndScale = (
 export function delay(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+
+export type PreviewAttribute = {
+	trait_type: 'Preview';
+	value: string;
+};
+export type AuthorAttribute = {
+	trait_type: 'Author';
+	value: string;
+};
+export type PublishedAttribute = {
+	trait_type: 'Published';
+	value: number;
+	display_type: 'date';
+}
+export type Attribute =
+	| AuthorAttribute
+	| PublishedAttribute
+	| PreviewAttribute
+export type TraitTypes = Attribute['trait_type'];
+
+export function getRelevantAttribute<T extends { trait_type: TraitTypes; value: string | number }>(
+	key: TraitTypes,
+	attributes: Attribute[]
+): T {
+	const attribute = attributes.find((a) => a.trait_type === key)!;
+	console.log('attribute: %j', attribute);
+	return attribute as unknown as T;
+}

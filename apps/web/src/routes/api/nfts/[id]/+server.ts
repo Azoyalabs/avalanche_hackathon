@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import type { AuthorAttribute, PreviewAttribute, PublishedAttribute } from '$lib/utils';
 
 const IN_APP_URL = (id: number | string) => `http://localhost:5173/articles/${id}`;
 export const GET: RequestHandler = async ({ params, url }) => {
@@ -13,18 +14,26 @@ export const GET: RequestHandler = async ({ params, url }) => {
 		attributes: [
 			{
 				trait_type: 'Author',
-				value: '0xthingy'
+				value: '0xmon_kul'
 			},
 			{
 				display_type: 'date',
 				trait_type: 'Published',
 				// Pass in a unix timestamp (seconds) as the value.
-				value: Math.floor(new Date().valueOf() / 1000)
+				value: Math.floor(new Date().valueOf())
+			},
+			{
+				trait_type: 'Preview',
+				value: 'This is a metadata contained preview'
 			}
 		]
 	};
 
 	return json(nft);
 };
-
-export type yep = Awaited<ReturnType<typeof GET>>;
+export type ExpectedResponse = {
+	name: string;
+	external_url: string;
+	image: string;
+	attributes: (PublishedAttribute | AuthorAttribute | PreviewAttribute)[];
+};

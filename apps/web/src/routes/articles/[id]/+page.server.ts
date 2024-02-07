@@ -1,6 +1,33 @@
+import type {  ExpectedResponse } from '../../api/nfts/[id]/+server';
 import type { PageServerLoad } from './$types';
 
-export const load = (async () => {
+
+export const load = (async ({ fetch, params, locals }) => {
+	const id = params.id;
+	// TODO: compute if NFT requires payment
+	const { userAddress } = locals;
+
+	// TODO: compute access
+	/**
+	 * If free -> everyone has access
+	 * If paid -> | User has paid for it -> has access
+	 * 			  | User hasn't paid for it -> no access, should be able to prompt for payment
+	 */
+	const hasAccess = true;
+
+	const nft = (await (await fetch(`/api/nfts/${id}`)).json()) as ExpectedResponse;
+	nft.attributes;
+
+	// TODO: get supporters
+	const minterAvatars = new Array(4).fill(
+		'https://images.mirror-media.xyz/publication-images/N-MMkKx65X408ZIdF99M8.png?height=592&width=592'
+	) as string[];
+
+	// TODO: This should be coming from our backend
+	/**
+	 * If user has access -> markdown
+	 * else -> preview
+	 */
 	const markdown = `
 
 ## In cornu magnorum cursu cornua desilit et
@@ -67,26 +94,28 @@ ex sinunt potest placet? Est danda, matri adrectisque rebus dixerat patresque
 frigore, nec. Tinguamus nec, fera sit distentae moenia undas, ipse pedum
 nequiquam arboris prope deam.`;
 
-	const title = 'article title';
+	// TODO: This should be coming from our backend
+	const banner =
+		'https://images.mirror-media.xyz/publication-images/yClkyV3zTvmXOt1cvcksN.png?height=596&amp;width=1192';
+
+	// TODO: the author info should be coming from avvyy when possible
 	const authorAvatar =
 		'https://images.mirror-media.xyz/publication-images/sPyyAY1axpIFmxpI-BhwB.png?height=600&width=600';
 	const authorName = 'abc';
-	const minterAvatars = new Array(4).fill(
-		'https://images.mirror-media.xyz/publication-images/N-MMkKx65X408ZIdF99M8.png?height=592&width=592'
-	) as string[];
 
 	return {
 		article: {
-			title,
+			title: nft.name,
 			author: {
 				name: authorName,
 				avatar: authorAvatar
 			},
 			content: markdown,
+			banner: banner,
 			minters: minterAvatars.map((a) => ({
-                avatar: a,
-                name: "minter name"
-            }))
+				avatar: a,
+				name: 'minter name'
+			}))
 		}
 	};
 }) satisfies PageServerLoad;

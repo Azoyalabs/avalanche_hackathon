@@ -45,7 +45,6 @@
 
 	const userStore = setUserStoreState(null);
 	$: address = derived(userStore.address, ($address) => $address);
-	$: console.log($address);
 
 	async function connectToParticle() {
 		console.dir(config);

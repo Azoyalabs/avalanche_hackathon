@@ -7,7 +7,7 @@
 	import { onMount, setContext } from 'svelte';
 	import { getUserStoreState } from '$lib/state';
 
-	const authorName = 'Author Name';
+	export let data;
 
 	const currentLink = writable(LayoutLink.Published);
 	setContext(CONTEXT_KEY, currentLink);
@@ -27,18 +27,23 @@
 <div class="container space-y-8">
 	<section class="pt-12 space-y-6">
 		<div class="flex flex-col items-center">
-			<div class="w-20">
+			<div class="w-20 overflow-hidden rounded-lg">
 				<AvatarGenerator
 					props={{
-						name: 'archway18m26lkjly2hkck25t7sdsrnu72x0g6gxdxxr4q',
+						name: data.userName || $page.params.name,
 						colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
-						square: false
+						square: true
 					}}
 				></AvatarGenerator>
 			</div>
 			<h1 class="mt-2 text-2xl font-bold">
-				{authorName}
+				{data.userName ?? $page.params.name}
 			</h1>
+			{#if data.userName}
+				<div class="mt-1 text-sm text-muted-foreground">
+					{$page.params.name}
+				</div>
+			{/if}
 			<div class="mt-4 text-sm text-muted-foreground">
 				domain and stuff. if no domain, link to avax domains to setup
 			</div>
