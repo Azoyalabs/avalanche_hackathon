@@ -3,7 +3,7 @@
 	export let name: string;
 </script>
 
-<Card.Root class="col-span-2 rounded-xl">
+<Card.Root class="block col-span-2 rounded-xl">
 	<Card.Content class="flex items-center justify-between py-4">
 		<div>
 			<h5 class="font-medium">Subscribe to {name}</h5>
