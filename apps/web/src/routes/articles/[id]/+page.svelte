@@ -10,30 +10,79 @@
 	import SupportModal from '$lib/ui/app/SupportModal/SupportModal.svelte';
 	import { toast } from 'svelte-sonner';
 	import { APP_LINKS } from '$lib/links.js';
+	import { WALLET_CLIENT, getUserStoreState } from '$lib/state.js';
+	import { bytesToHex, createWalletClient, custom, getContract, toBytes, toHex } from 'viem';
+	import { avalancheFuji, bscTestnet } from 'viem/chains';
+	import { BnM_TOKEN_ADDRESS, SUMMIT_ADDRESS, SUMMIT_RECEIVER_ADDRESS } from '$lib/constants.js';
+	import { abi as summitABI } from '$lib/contracts/summit/abi.js';
+	import { abi as BNMABI } from '$lib/contracts/ERC20/abi.js';
+	import { page } from '$app/stores';
+	import { BNBChainTestnet } from '@particle-network/chains';
 
 	export let data;
 
 	let showSupportModal = false;
+	const { isConnected, client, provider, address: userAddress } = getUserStoreState();
 
-	const promiser = () =>
-		toast.promise<{ name: string }>(
-			new Promise((resolve, reject) =>
-				setTimeout(() => {
-					if (Math.random() > 0.5) {
-						resolve({ name: 'Svelte Sonner' });
-					} else {
-						reject();
-					}
-				}, 1500)
-			),
+	const promiser = async () => {
+		const walletClient = createWalletClient({
+			//chain: avalancheFuji,
+			chain: bscTestnet,
+			transport: custom($provider!)
+		});
+		$provider!.request({
+			
+		})
+
+		await walletClient.switchChain({
+			id: avalancheFuji.id
+		})
+		
+
+		const bnmContract = getContract({
+			address: BnM_TOKEN_ADDRESS,
+			abi: BNMABI,
+			client: walletClient
+		});
+
+		const summitContract = getContract({
+			address: SUMMIT_ADDRESS,
+			abi: summitABI,
+			client: walletClient
+		});
+
+		// TODO: get mintprice if paying contract
+		// summitContract.read.mintPrice();
+
+		//console.log(bytesToHex(toBytes($page.params.id)));
+		console.log(toHex($page.params.id))
+		const result = await bnmContract.simulate.transferAndCall(
+			[SUMMIT_RECEIVER_ADDRESS as `0x${string}`, BigInt(0), bytesToHex(toBytes(BigInt($page.params.id)))],
 			{
-				loading: 'Loading...',
-				success: (data) => {
-					return data.name + ' toast has been added';
-				},
-				error: 'Error... :( Try again!'
+				account: $userAddress! as `0x${string}`
 			}
 		);
+		console.log(`calculated gas: ${result}`)
+		
+
+		let txPromise = bnmContract.write.transferAndCall(
+			[SUMMIT_RECEIVER_ADDRESS as `0x${string}`, BigInt(0), bytesToHex(toBytes(BigInt($page.params.id)))],
+			{
+				account: $userAddress! as `0x${string}`,
+			}
+		);
+
+		return toast.promise<Awaited<typeof txPromise>>(txPromise, {
+			loading: 'Loading...',
+			success: (hash) => {
+				return 'Transaction successful! \n' + hash;
+			},
+			error: (err) => {
+				console.error(err);
+				return `Error: ${err}`;
+			}
+		});
+	};
 </script>
 
 <div
@@ -78,17 +127,21 @@
 						</Avatar.Root>
 					{/each}
 				</div>
-				<Dialog.Root bind:open={showSupportModal}>
-					<Dialog.Trigger class={buttonVariants({ variant: 'default', size: 'sm' })}>
-						Support
-					</Dialog.Trigger>
-					<SupportModal
-						on:click={() => {
-							showSupportModal = false;
-							promiser();
-						}}
-					></SupportModal>
-				</Dialog.Root>
+				{#if $isConnected}
+					<Dialog.Root bind:open={showSupportModal}>
+						<Dialog.Trigger class={buttonVariants({ variant: 'default', size: 'sm' })}>
+							Support
+						</Dialog.Trigger>
+						<SupportModal
+							on:click={() => {
+								showSupportModal = false;
+								promiser();
+							}}
+						></SupportModal>
+					</Dialog.Root>
+				{:else}
+					<div class="text-xs">Connect to support</div>
+				{/if}
 			</div>
 		</div>
 	</div>

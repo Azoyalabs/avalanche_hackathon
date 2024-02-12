@@ -17,8 +17,6 @@
 		return `/users/${$page.params.name}/${link}`;
 	};
 
-	// TODO: handle has domain
-	const domain = {};
 	const userStore = getUserStoreState();
 	$: isCurrentUser = derived(userStore.address, ($address) => {
 		return $address === $page.params.name;

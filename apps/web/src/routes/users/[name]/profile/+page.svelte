@@ -5,24 +5,37 @@
 	import * as Card from '$lib/ui/shadcn/ui/card';
 	import { page } from '$app/stores';
 	import FeedbackButton from '$lib/ui/app/FeedbackButton/FeedbackButton.svelte';
+	import { getContext } from 'svelte';
+	import { formatERC20 } from '$lib/utils';
+	import { getUserStoreState } from '$lib/state';
 
 	setLayoutContext(LayoutLink.Profile);
 
+	const summitClient = getContext('SUMMIT');
+	$: rewards = summitClient.read.aggregated([$page.params.name]) as Promise<bigint>;
+
 	$: referalLink = `${$page.url.host}?ref=${$page.params.name}`;
-	$: profileLink = `${$page.url.href}`;
+	$: profileLink = `${$page.url.toString()}`;
+
+	const userStore = getUserStoreState();
 </script>
 
 <div class="grid gap-6 md:grid-cols-2">
 	<Card.Root>
 		<Card.Header>
 			<Card.Title>Your rewards</Card.Title>
-			<Card.Description>description</Card.Description>
+			<Card.Description>Get rewarded by publishing on Summit</Card.Description>
 		</Card.Header>
 
 		<Card.Content>
-			<div>rewards amount</div>
+			{#await rewards then resolved}
+				<div>
+					{formatERC20(resolved, 18, 'BnM')} claimable
+				</div>
+			{/await}
 		</Card.Content>
 		<Card.Footer>
+			<!-- TODO: interact, claim rewards -->
 			<Button>Claim Rewards</Button>
 		</Card.Footer>
 	</Card.Root>
@@ -30,7 +43,7 @@
 	<Card.Root class="overflow-hidden">
 		<Card.Header>
 			<Card.Title>Referral Link</Card.Title>
-			<Card.Description>description</Card.Description>
+			<Card.Description>Share summit with your friends and followers</Card.Description>
 		</Card.Header>
 
 		<Card.Content>
@@ -60,7 +73,7 @@
 	<Card.Root class="overflow-hidden">
 		<Card.Header>
 			<Card.Title>Profile Link</Card.Title>
-			<Card.Description>description</Card.Description>
+			<Card.Description>Share a direct link to your profile</Card.Description>
 		</Card.Header>
 
 		<Card.Content>

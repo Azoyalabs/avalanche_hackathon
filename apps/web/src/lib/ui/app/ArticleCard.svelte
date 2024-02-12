@@ -1,14 +1,8 @@
 <script lang="ts">
-<<<<<<< HEAD
 	import { APP_LINKS } from '$lib/links';
 	import * as Avatar from '$lib/ui/shadcn/ui/avatar';
 
 	// FIXME: we need an article ID or a slug
-=======
-	import * as Avatar from '$lib/ui/shadcn/ui/avatar';
-
-    // FIXME: we need an article ID or a slug
->>>>>>> 9f81bf4 (web: add /articles/[id] page mockup, including support for generated avatars)
 	export let article: {
 		title: string;
 		publishDate: Date;
@@ -22,11 +16,7 @@
 
 <a
 	class="@container hover:border-foreground/40 group block w-full overflow-hidden rounded-xl border duration-300"
-<<<<<<< HEAD
 	href={APP_LINKS.ARTICLE('hey')}
-=======
-	href="/"
->>>>>>> 9f81bf4 (web: add /articles/[id] page mockup, including support for generated avatars)
 >
 	<div class="@lg:flex h-full gap-2">
 		<img
@@ -38,13 +28,6 @@
 			<h4 class="text-xl font-bold">{article.title}</h4>
 			<p class="text-xs">published: {article.publishDate.toDateString()}</p>
 
-<<<<<<< HEAD
-=======
-			<div class="text-sm text-muted-foreground">
-				{article.preview}
-			</div>
-
->>>>>>> 9f81bf4 (web: add /articles/[id] page mockup, including support for generated avatars)
 			<div class="flex items-center">
 				<Avatar.Root class="border">
 					<Avatar.Image src={article.author.avatar} alt={article.author.name} />
@@ -60,7 +43,6 @@
 					{article.author.name}
 				</span>
 			</div>
-<<<<<<< HEAD
 
 			<div class="relative pt-6 overflow-y-hidden text-sm text-muted-foreground h-24 @xl:max-h-none">
 				{article.preview}
@@ -69,8 +51,6 @@
 					class="@xl:hidden from-background/0 via-background-00 to-background/60 absolute inset-0 bg-gradient-to-b"
 				></div>
 			</div>
-=======
->>>>>>> 9f81bf4 (web: add /articles/[id] page mockup, including support for generated avatars)
 		</div>
 	</div>
 </a>

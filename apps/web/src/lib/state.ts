@@ -1,8 +1,7 @@
-import { AvalancheTestnet } from '@particle-network/chains';
 import { type EVMProvider, ParticleConnect } from '@particle-network/connect';
 import { getContext, setContext } from 'svelte';
-import { derived, writable, type Writable } from 'svelte/store';
-import { createPublicClient, createWalletClient, http, custom, type WalletClient } from 'viem';
+import { derived, writable } from 'svelte/store';
+import { createWalletClient, custom, type WalletClient } from 'viem';
 import { avalancheFuji } from 'viem/chains';
 
 export const USER_ADDRESS = writable<string | null>(null);
@@ -11,75 +10,8 @@ export const BnM_BALANCE = writable<bigint>(BigInt(0));
 export const PARTICLE_CONNECTION = writable<ParticleConnect | null>(null);
 export const PROVIDER = writable<EVMProvider | null>(null);
 export const WALLET_CLIENT = writable<WalletClient | null>(null);
-/*
-PROVIDER.subscribe(async (provider) => {
-	if (provider) {
-		console.log('provider set');
-		const client = createWalletClient({
-			chain: avalancheFuji,
-			transport: custom(provider)
-		});
 
-		WALLET_CLIENT.set(client);
-
-		const [address] = await client.getAddresses();
-		// console.dir(address);
-
-		USER_ADDRESS.set(address);
-	} else {
-		// TODO: clean up
-		WALLET_CLIENT.set(null);
-		USER_ADDRESS.set(null);
-	}
-});
-*/
-class User {
-	address: string;
-	walletClient: WalletClient;
-	provider: EVMProvider;
-
-	constructor(options: { address: string; walletClient: WalletClient; provider: EVMProvider }) {
-		this.address = options.address;
-		this.walletClient = options.walletClient;
-		this.provider = options.provider;
-	}
-
-	static async fromProvider(provider: EVMProvider): Promise<User> {
-		const client = createWalletClient({
-			chain: avalancheFuji,
-			transport: custom(provider)
-		});
-
-		const [address] = await client.getAddresses();
-
-		return new User({
-			address,
-			walletClient: client,
-			provider
-		});
-	}
-
-	async disconnect() {
-		this.provider.disconnect?.() || null;
-	}
-}
 const USER_CTX = 'USER_CTX';
-const userState = writable<User | null>(null);
-
-export async function setUserState(provider: EVMProvider | null): Promise<User | null> {
-	if (provider) {
-		const user = await User.fromProvider(provider);
-		setContext(USER_CTX, userState);
-		return user;
-	} else {
-		setContext(USER_CTX, userState);
-		return null;
-	}
-}
-
-export function getUserState() {
-	return getContext<Writable<User | null>>(USER_CTX);
-}
 
 export function setUserStoreState(provider: EVMProvider | null) {
 	const user = createUserStore(provider);
@@ -132,6 +64,7 @@ export function createUserStore(initialProvider: EVMProvider | null) {
 		disconnect,
 		client: walletClient,
 		address,
+		provider,
 		isConnected: derived(address, ($add) => $add !== null)
 	};
 }

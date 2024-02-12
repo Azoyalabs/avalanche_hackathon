@@ -1,8 +1,4 @@
 <script lang="ts">
-<<<<<<< HEAD
-=======
-	import { Button } from '$lib/ui/shadcn/ui/button';
->>>>>>> 9f81bf4 (web: add /articles/[id] page mockup, including support for generated avatars)
 	import '../app.pcss';
 	import { navigating } from '$app/stores';
 	import { Button } from '$lib/ui/shadcn/ui/button';
@@ -32,20 +28,24 @@
 
 	import * as Sheet from '$lib/ui/shadcn/ui/sheet';
 	import SheetBody from '$lib/ui/app/SheetBody/SheetBody.svelte';
-	import { setUserState, setUserStoreState } from '$lib/state';
+	import { setUserStoreState } from '$lib/state';
 	import { derived } from 'svelte/store';
 	import { APP_LINKS } from '$lib/links';
-	import { goto } from '$app/navigation';
 	import Address from '$lib/ui/app/Address/Address.svelte';
 	import { delay } from '$lib/utils';
+	import { setContext } from 'svelte';
+	import { GITHUB_LINK, TWITTER_LINK } from '$lib/constants.js';
 
 	// TODO: support other chains for crosschain minting
 	const config: ConnectConfig = {
 		projectId: PUBLIC_PARTICLE_PROJECT_ID,
 		clientKey: PUBLIC_PARTICLE_CLIENT_KEY,
 		appId: PUBLIC_PARTICLE_APP_ID,
-		chains: [EthereumGoerli as Chain, AvalancheTestnet as Chain, BNBChainTestnet as Chain]
+		chains: [AvalancheTestnet as Chain, BNBChainTestnet as Chain, EthereumGoerli as Chain]
 	};
+	export let data;
+
+	setContext('SUMMIT', data.contracts.SUMMIT_CONTRACT);
 
 	const userStore = setUserStoreState(null);
 	$: address = derived(userStore.address, ($address) => $address);
@@ -54,9 +54,10 @@
 		console.dir(config);
 		const particle = new ParticleConnect(config);
 		const provider = (await particle.connect()) as EVMProvider;
-
 		const store = await userStore.connect(provider);
 
+		// TODO: How do we switch network with particle?
+		 
 		// Wait for address query
 		await delay(200);
 		await fetch('/auth', {
@@ -73,10 +74,8 @@
 	async function disconnect() {
 		if (userStore) {
 			userStore.disconnect();
-			setUserState(null);
 		}
-		//await $PROVIDER?.disconnect()
-		//$PROVIDER = null;
+		
 	}
 
 	$: isConnected = derived(userStore.isConnected, ($connection) => $connection);
@@ -86,7 +85,6 @@
 
 <header class="py-3 border-b">
 	<div class="container flex items-center justify-between">
-<<<<<<< HEAD
 		<a class="flex items-center" href="/">
 			<img src="/favicon.png" alt="logo" class="w-8 h-8" />
 			<span class="ml-2 text-2xl font-black uppercase font-nunito">Summit</span>
@@ -182,19 +180,11 @@
 			{:else}
 				<Button on:click={connectToParticle}>Connect wallet</Button>
 			{/if}
-=======
-		<div class="flex items-center">
-			<img src="/favicon.png" alt="logo" class="w-8 h-8" /> <span class="ml-2 text-2xl font-black uppercase font-nunito">Summit</span>
-		</div>
-		<div>
-			<Button size="sm">Connect</Button>
->>>>>>> 9f81bf4 (web: add /articles/[id] page mockup, including support for generated avatars)
 		</div>
 	</div>
 </header>
 
 <div class="flex-grow">
-<<<<<<< HEAD
 	{#if $navigating}
 		<div class="flex flex-col items-center justify-center min-h-screen">
 			<MountainSnow class="animate-ping duration-[2000ms]"></MountainSnow>
@@ -202,14 +192,16 @@
 	{:else}
 		<slot />
 	{/if}
-=======
-	<slot />
->>>>>>> 9f81bf4 (web: add /articles/[id] page mockup, including support for generated avatars)
 </div>
 
 <footer class="">
 	<div class="px-6 py-20 mx-auto overflow-hidden max-w-7xl sm:py-24 lg:px-8">
 		<nav class="-mb-6 columns-2 sm:flex sm:justify-center sm:space-x-12" aria-label="Footer">
+			<div class="pb-6">
+				<a href="/" class="text-sm leading-6 text-muted-foreground hover:text-foreground"
+					>Home</a
+				>
+			</div>
 			<div class="pb-6">
 				<a href="/analytics" class="text-sm leading-6 text-muted-foreground hover:text-foreground"
 					>Analytics</a
@@ -217,8 +209,7 @@
 			</div>
 		</nav>
 		<div class="flex justify-center mt-10 space-x-10">
-			<!-- TODO: link up twitter -->
-			<a href="#" class="text-muted-foreground hover:text-foreground">
+			<a href="{TWITTER_LINK}" class="text-muted-foreground hover:text-foreground">
 				<span class="sr-only">X</span>
 				<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path
@@ -226,8 +217,7 @@
 					/>
 				</svg>
 			</a>
-			<!-- TODO: link up github -->
-			<a href="#" class="text-muted-foreground hover:text-foreground">
+			<a href="{GITHUB_LINK}" class="text-muted-foreground hover:text-foreground">
 				<span class="sr-only">GitHub</span>
 				<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path

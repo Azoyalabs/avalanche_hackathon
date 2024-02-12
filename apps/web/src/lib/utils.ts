@@ -59,7 +59,6 @@ export function delay(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-
 export type PreviewAttribute = {
 	trait_type: 'Preview';
 	value: string;
@@ -72,11 +71,8 @@ export type PublishedAttribute = {
 	trait_type: 'Published';
 	value: number;
 	display_type: 'date';
-}
-export type Attribute =
-	| AuthorAttribute
-	| PublishedAttribute
-	| PreviewAttribute
+};
+export type Attribute = AuthorAttribute | PublishedAttribute | PreviewAttribute;
 export type TraitTypes = Attribute['trait_type'];
 
 export function getRelevantAttribute<T extends { trait_type: TraitTypes; value: string | number }>(
@@ -86,4 +82,13 @@ export function getRelevantAttribute<T extends { trait_type: TraitTypes; value: 
 	const attribute = attributes.find((a) => a.trait_type === key)!;
 	console.log('attribute: %j', attribute);
 	return attribute as unknown as T;
+}
+
+const erc20Formatter = Intl.NumberFormat(undefined, {
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2
+});
+
+export function formatERC20(amount: bigint, decimals: number, symbol: string) {
+	return `${erc20Formatter.format(Number(amount) * Math.pow(10, -decimals))} ${symbol}`;
 }
