@@ -6,6 +6,7 @@
 	import { CONTEXT_KEY, LayoutLink } from './context';
 	import { onMount, setContext } from 'svelte';
 	import { getUserStoreState } from '$lib/state';
+	import Button from '$lib/ui/shadcn/ui/button/button.svelte';
 
 	export let data;
 
@@ -44,9 +45,17 @@
 					{$page.params.name}
 				</div>
 			{/if}
-			<div class="mt-4 text-sm text-muted-foreground">
-				domain and stuff. if no domain, link to avax domains to setup
-			</div>
+			{#if !data.userName && $isCurrentUser}
+				<div class="w-full p-6 mt-4 text-sm border rounded-lg text-muted-foreground">
+					<h3 class="font-medium text-white">Customize your profile using Avvyy</h3>
+
+					<div class="flex items-center justify-between">
+						Avvvyy is the leading avalanche name service <Button href="" variant="ghost"
+							>Get your own domain</Button
+						>
+					</div>
+				</div>
+			{/if}
 		</div>
 
 		<div class="overflow-x-auto">
