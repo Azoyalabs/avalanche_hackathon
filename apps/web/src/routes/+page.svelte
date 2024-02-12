@@ -83,20 +83,14 @@
 	</div>
 </section>
 
-<section class="container mt-12">
-	<h2 class="text-3xl font-bold font-nunito">Latest publications</h2>
-	<p>Fresh off the press</p>
-</section>
-
 <div class="container py-32">
 	<div class="grid items-center grid-cols-1 gap-x-8 gap-y-16 lg:grid-cols-2">
 		<div class="w-full max-w-xl mx-auto lg:mx-0">
-			<h2 class="text-3xl font-bold tracking-tight ">
-				Built with Web3's most powerful technology
-			</h2>
+			<h2 class="text-3xl font-bold tracking-tight">Built with Web3's most powerful technology</h2>
 			<p class="mt-6 text-lg leading-8 text-muted-foreground">
-				Fight bots, chain agnostic, etc...Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas tempus tellus etiam
-				sed. Quam a scelerisque amet ullamcorper eu enim et fermentum, augue.
+				Fight bots, chain agnostic, etc...Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+				Et, egestas tempus tellus etiam sed. Quam a scelerisque amet ullamcorper eu enim et
+				fermentum, augue.
 			</p>
 		</div>
 		<div
