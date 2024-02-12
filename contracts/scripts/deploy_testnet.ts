@@ -95,6 +95,9 @@ async function main() {
     await receiverContract.write.updateTarget([summitAddress!]);
 
 
+    // perform verification after deployment? 
+    // https://blog.chain.link/how-to-verify-smart-contract-on-etherscan-hardhat/
+
     return {
         summitAddress,
         receiverAddress

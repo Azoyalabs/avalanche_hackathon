@@ -7,7 +7,8 @@
     "drip": "esrun scripts/drip_bnm.ts",
     "mint-author": "esrun scripts/mint_author_token.ts",
     "mint-reader": "esrun scripts/mint_reader_token.ts",
-    "allow-writer": "esrun scripts/write_access_control_status.ts"
+    "allow-writer": "esrun scripts/write_access_control_status.ts",
+    "show-params": "esrun scripts/show_params_instantiation.ts"
   },
   "description": "",
   "main": "index.js",
@@ -28,6 +29,7 @@
     "chai": "^4.2.0",
     "dotenv": "^16.4.1",
     "esrun": "^3.2.26",
+    "ethers": "^6.11.0",
     "hardhat": "^2.19.4",
     "hardhat-gas-reporter": "^1.0.8",
     "solidity-coverage": "^0.8.5",

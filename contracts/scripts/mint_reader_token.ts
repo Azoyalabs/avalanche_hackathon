@@ -14,8 +14,6 @@ import { bnMTokenAbi, summitAbi } from "../generated/contractAbis";
 
 import * as viem from "viem";
 
-// console.log(process.env.ADMIN_PASSPHRASE)
-
 async function main() {
     const admin_account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!, {
         //changeIndex: 1
@@ -25,7 +23,6 @@ async function main() {
         //changeIndex: 1
     })
     
-    //console.log(account.address)
 
     const wallet = createWalletClient(
         {
@@ -35,7 +32,6 @@ async function main() {
         }
     )
 
-    //console.log(await wallet.getAddresses())
 
     const publicClient = createPublicClient({
         chain: avalancheFuji,
@@ -69,9 +65,12 @@ async function main() {
         [
             RECEIVER_ADDRESS,
             BigInt(0),
-            //bytesToHex(toBytes(tokenId))   
-            toHex(tokenId)         
-        ]
+            viem.bytesToHex(viem.toBytes(tokenId))   
+            //toHex(tokenId)         
+        ],
+        {
+            account: user_account
+        }
     )
 
 
