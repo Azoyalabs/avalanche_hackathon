@@ -9,7 +9,7 @@
 	export let data;
 =======
 	import AvatarGenerator from '$lib/ui/app/AvatarGenerator/AvatarGenerator.svelte';
-	import SubscriptionCard from '$lib/ui/app/SubscriptionCard.svelte';
+	import SubscriptionCard from '$lib/ui/app/SubscriptionCard/SubscriptionCard.svelte';
 
 	// TODO: remove faker
 	import { faker } from '@faker-js/faker';
