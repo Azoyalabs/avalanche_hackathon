@@ -13,6 +13,7 @@ import { stringToAddress } from "./utils";
 import { bnMTokenAbi, summitAbi } from "../generated/contractAbis";
 
 import * as viem from "viem";
+import { exit } from "process";
 
 async function main() {
     const admin_account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!, {
@@ -47,10 +48,9 @@ async function main() {
 
     // use write account here instead of admin 
     let tokenId = await summitContract.read.createTokenId(
-        [admin_account.address, BigInt(0), false]   
+        [admin_account.address, BigInt(1), false]   
     );
-    
-
+        
     // get mint price if it's a paid article 
     let _mint_price = await summitContract.read.mintPrice();
 

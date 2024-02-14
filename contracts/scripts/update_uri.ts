@@ -13,7 +13,7 @@ import * as viem from "viem";
 require('dotenv').config()
 
 
-const NEW_URI = "";
+const NEW_URI = "https://avalanche-hackathon-web.vercel.app/api/nfts/";
 
 
 async function main() {

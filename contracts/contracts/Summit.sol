@@ -4,8 +4,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-// import "@openzeppelin/contracts/utils/Strings.sol";
-
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 // import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 // import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
@@ -17,11 +16,20 @@ import "./AccessControl.sol";
 import "./IdTracker.sol";
 import "./TokenUtils.sol";
 
-contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils, AccessControl {
+contract Summit is
+    ERC1155,
+    Ownable,
+    PaymentAggregator,
+    IdTracker,
+    TokenUtils,
+    AccessControl
+{
     uint256 constant MAX_ARTICLE_ID = 1 << (96 - 1);
 
     uint256 public mintPrice;
     address public tokenReceiver;
+    string private _uri;
+
 
     mapping(uint => bool) public tokensTracker;
 
@@ -37,22 +45,25 @@ contract Summit is ERC1155, Ownable, PaymentAggregator, IdTracker, TokenUtils, A
         AccessControl(accessController)
     {
         tokenReceiver = _tokenReceiver;
+        _uri = uri_;
 
         // price is in wei
         mintPrice = _mintPrice;
     }
 
-    /*
-    string private _uri;
 
-    function uri(uint256 id) override public view returns (string memory) {
-        string memory stringId = string(abi.encode(id));
-        return string(abi.encodePacked(_uri, stringId));
+    function uri(uint256 id) public view override returns (string memory) {
+        //string memory stringId = string(abi.encode(id));
+        //return string(abi.encodePacked(_uri, stringId));
+        return string.concat(_uri, Strings.toString(id));
     }
-    */
 
     function setURI(string memory newuri) public onlyOwner {
         _setURI(newuri);
+    }
+
+    function updateMintPrice(uint256 newMintPrice) public onlyOwner {
+        mintPrice = newMintPrice;
     }
 
     error Unauthorized();

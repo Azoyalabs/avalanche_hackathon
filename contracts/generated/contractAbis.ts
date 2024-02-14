@@ -850,9 +850,18 @@ export const summitAbi = [
     outputs: [],
   },
   {
+    stateMutability: 'nonpayable',
+    type: 'function',
+    inputs: [
+      { name: 'newMintPrice', internalType: 'uint256', type: 'uint256' },
+    ],
+    name: 'updateMintPrice',
+    outputs: [],
+  },
+  {
     stateMutability: 'view',
     type: 'function',
-    inputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    inputs: [{ name: 'id', internalType: 'uint256', type: 'uint256' }],
     name: 'uri',
     outputs: [{ name: '', internalType: 'string', type: 'string' }],
   },

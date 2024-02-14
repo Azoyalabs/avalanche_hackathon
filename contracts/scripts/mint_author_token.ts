@@ -42,7 +42,7 @@ async function main() {
     })
 
     let tokenId = await summitContract.read.createTokenId(
-        [account.address, BigInt(0), false]   
+        [account.address, BigInt(1), false]   
     );
 
 
@@ -58,8 +58,8 @@ async function main() {
         [
             RECEIVER_ADDRESS,
             BigInt(0),
-            //bytesToHex(toBytes(tokenId))   
-            toHex(tokenId)         
+            bytesToHex(toBytes(tokenId))   
+            //toHex(tokenId)         
         ]
     )
 

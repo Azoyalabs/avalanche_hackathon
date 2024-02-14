@@ -2,41 +2,37 @@ import { createWalletClient, createPublicClient, http } from "viem";
 
 import { avalancheFuji } from 'viem/chains'
 import { mnemonicToAccount } from 'viem/accounts'
-
 import { SUMMIT_ADDRESS } from "./constants";
-
 import { summitAbi } from "../generated/contractAbis";
 
 import * as viem from "viem";
+import { exit } from "process";
 
 require('dotenv').config()
 
 
 async function main() {
-    const userAccount = mnemonicToAccount(process.env.USER_PASSPHRASE!!)
-    const accessControllerAccount = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!);   //process.env.ACCESS_CONTROLLER_PASSPHRASE!!)
+    const account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!)
+    const account_new_controller = mnemonicToAccount(process.env.ACCESS_CONTROLLER_PASSPHRASE!)
 
 
     const wallet = createWalletClient(
         {
-            account: accessControllerAccount,
+            account: account,
             chain: avalancheFuji,
             transport: http(avalancheFuji.rpcUrls.public.http[0])
         }
     )
 
     let summitContract = viem.getContract({
-        abi: summitAbi,
+        abi: summitAbi, //SUMMIT_ABI, //SUMMIT_DATA.abi,
         address: SUMMIT_ADDRESS,
         walletClient: wallet
         //publicClient: publicClient
     })
-    // set as allowed
-    const res = await summitContract.write.setAccessStatus(
-        [
-            "0xbE54579BBF62B543F270b89505DE3A4A9f143E7A", //accessControllerAccount.address,
-            1
-        ],
+
+    const res = await summitContract.write.setAccessControlAdmin(
+        [account_new_controller.address],
         {
             account: wallet.account
         }
@@ -47,5 +43,5 @@ async function main() {
 
 
 main().then((res) => {
-    console.log(`Access status modified with tx: ${res}`)
+    console.log(`Successfully changed access control admin with tx: ${res}`)
 })

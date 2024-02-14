@@ -15,6 +15,8 @@ import { parseTokenId, createTokenId } from "summit-utils";
 
 
 describe("Summit", function () {
+    const BASE_URI = "https://samplewebsite.org/api/";
+
     async function deployContracts() {
         const [contractOwner, articleWriter, articleReader, userLambda, userLambda2, accessController] = await hre.viem.getWalletClients();
 
@@ -44,7 +46,7 @@ describe("Summit", function () {
                 accessController.account.address, 
                 summitReceiver.address, 
                 BigInt(100), 
-                "https://samplewebsite.org/api/{id}"], 
+                BASE_URI], 
         {
         });
 
@@ -87,6 +89,18 @@ describe("Summit", function () {
                 (await summitReceiver.read.target()).toLowerCase()
             ).to.equal(summit.address);
         })
+    })
+
+    describe("URI", function() {
+        it("URI should append token ID", async function () {
+            const { summit, contractOwner } = await loadFixture(deployContracts);
+
+            for (let tokenId = 0; tokenId < 10; tokenId++) {
+                let expectedURI = BASE_URI + tokenId.toString(); 
+                expect(await summit.read.uri([BigInt(tokenId)])).to.be.eq(expectedURI);
+            }
+        })
+
     })
 
 

@@ -8,7 +8,9 @@
     "mint-author": "esrun scripts/mint_author_token.ts",
     "mint-reader": "esrun scripts/mint_reader_token.ts",
     "allow-writer": "esrun scripts/write_access_control_status.ts",
-    "show-params": "esrun scripts/show_params_instantiation.ts"
+    "show-params": "esrun scripts/show_params_instantiation.ts",
+    "modify:access-admin": "esrun scripts/modify_admin_access_control.ts",
+    "update:uri": "esrun scripts/update_uri.ts"
   },
   "description": "",
   "main": "index.js",
