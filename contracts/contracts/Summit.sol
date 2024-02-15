@@ -30,7 +30,6 @@ contract Summit is
     address public tokenReceiver;
     string private _uri;
 
-
     mapping(uint => bool) public tokensTracker;
 
     constructor(
@@ -50,7 +49,6 @@ contract Summit is
         // price is in wei
         mintPrice = _mintPrice;
     }
-
 
     function uri(uint256 id) public view override returns (string memory) {
         //string memory stringId = string(abi.encode(id));
@@ -95,10 +93,6 @@ contract Summit is
             revert Unauthorized();
         }
 
-        if (accessStatusTracker[minter] != AccessStatus.Authorized) {
-            revert NotAllowedAccess(minter);
-        }
-
         (address creator, uint articleId, bool isPaying) = parseTokenId(
             tokenId
         );
@@ -108,6 +102,10 @@ contract Summit is
 
         // first branch: minter is a match with creator
         if (creator == minter) {
+            if (accessStatusTracker[minter] != AccessStatus.Authorized) {
+                revert NotAllowedAccess(minter);
+            }
+
             // check if this is a valid ID to mint, aka is it a new article?
             if (!isValidId(creator, articleId)) {
                 revert ArticleIdNonSequential(articleId, idTracker[creator]);

@@ -1368,6 +1368,8 @@ describe("Summit", function () {
         })
 
 
+        // removing Reader tests to be consistent with new auth flow (no restrictions on readers)
+        /*
         describe("Reader tests", function () {
             it("Unknown reader cannot mint", async function () {
                 const { bnmToken, summit, summitReceiver, articleWriter, articleReader, contractOwner, userLambda, userLambda2, accessController } = await loadFixture(deployContracts);
@@ -1580,5 +1582,6 @@ describe("Summit", function () {
                 ));
             })
         })
+        */
     })
 })

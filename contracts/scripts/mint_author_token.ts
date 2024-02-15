@@ -17,7 +17,7 @@ import * as viem from "viem";
 import { bnMTokenAbi, summitAbi } from "../generated/contractAbis";
 
 async function main() {
-    const account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
+    const account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!)
 
     const publicClient = createPublicClient({
         chain: avalancheFuji,
@@ -42,7 +42,7 @@ async function main() {
     })
 
     let tokenId = await summitContract.read.createTokenId(
-        [account.address, BigInt(1), false]   
+        [account.address, BigInt(0), false]   
     );
 
 
@@ -64,10 +64,10 @@ async function main() {
     )
 
 
-    return res
+    return { res, tokenId }
 }
 
 
 main().then((res) => {
-    console.log(`Mint succeeded. Tx hash: ${res}`)
+    console.log(`Mint succeeded. Tx hash: ${res.res}, Token Id: ${res.tokenId}`)
 })

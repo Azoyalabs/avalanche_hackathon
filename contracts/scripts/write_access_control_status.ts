@@ -13,8 +13,9 @@ require('dotenv').config()
 
 
 async function main() {
-    const userAccount = mnemonicToAccount(process.env.USER_PASSPHRASE!!)
-    const accessControllerAccount = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!);   //process.env.ACCESS_CONTROLLER_PASSPHRASE!!)
+    const userAccount = mnemonicToAccount(process.env.USER_PASSPHRASE!)
+    const adminAccount = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!);   //process.env.ACCESS_CONTROLLER_PASSPHRASE!!)
+    const accessControllerAccount = mnemonicToAccount(process.env.ACCESS_CONTROLLER_PASSPHRASE!);   //process.env.ACCESS_CONTROLLER_PASSPHRASE!!)
 
 
     const wallet = createWalletClient(
