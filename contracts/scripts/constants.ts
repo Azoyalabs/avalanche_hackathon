@@ -9,8 +9,8 @@ export const SUMMIT_ADDRESS = "0x30cdaa09e7a763ca2521fe6a9710776bd7a746e6"
 export const RECEIVER_ADDRESS = "0xd3d7cd1107fe49720eb6acfd0c7c33d8a26f467f"
 */
 
-export const SUMMIT_ADDRESS = "0xe1d51536007768d6fe6dfea69e217b5a24ce7566"
-export const RECEIVER_ADDRESS = "0x0b2e59c85bd6e921f4c4ebd3fe951807d004dd61"
+export const SUMMIT_ADDRESS = "0xb02dd60b0d337ddd6f99c98eae0292a51f514292"
+export const RECEIVER_ADDRESS = "0x6c55574d10045b5da20e87709d7a24f24c943aec"
 
 
 /// Taken from: https://docs.chain.link/ccip/supported-networks/v1_2_0/testnet

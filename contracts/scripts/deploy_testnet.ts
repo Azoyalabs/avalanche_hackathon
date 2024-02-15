@@ -23,7 +23,10 @@ const URI = "https://avalanche-hackathon-web.vercel.app/api/nfts/"
 
 async function main() {
     const account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
-    const accessController = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
+    const accessController = mnemonicToAccount(process.env.ACCESS_CONTROLLER_PASSPHRASE!!)
+
+    console.log(`admin address: ${account.address}`)
+    console.log(`access controller address: ${accessController.address}`)
 
 
     const publicClient = createPublicClient({
@@ -98,13 +101,17 @@ async function main() {
     // perform verification after deployment? 
     // https://blog.chain.link/how-to-verify-smart-contract-on-etherscan-hardhat/
 
+    const verify_command = `npx hardhat verify --network snowtrace ${summitAddress} "${account.address}" "${accessController.address}" "${receiverAddress}" "100" "${URI}"`
+
     return {
         summitAddress,
-        receiverAddress
+        receiverAddress,
+        verify_command
     }
 }
 
 
 main().then((res) => {
     console.log(`Instantiation succeeded. Receiver at address: ${res.receiverAddress}, Summit at address: ${res.summitAddress}`)
+    console.log(`Input this command to verify Summit contract: ${res.verify_command}`)
 })
