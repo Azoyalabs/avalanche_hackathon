@@ -26,18 +26,20 @@
 
 	const promiser = async () => {
 		const walletClient = createWalletClient({
-			//chain: avalancheFuji,
-			chain: bscTestnet,
+			chain: avalancheFuji,
+			//chain: bscTestnet,
 			transport: custom($provider!)
 		});
-		$provider!.request({
-			
-		})
 
-		await walletClient.switchChain({
-			id: avalancheFuji.id
-		})
-		
+		try {
+			await walletClient.switchChain({
+				//id: bscTestnet.id
+				id: avalancheFuji.id
+			});
+		} catch (error) {
+			console.log('threw when switchchain');
+			console.error(error);
+		}
 
 		const bnmContract = getContract({
 			address: BnM_TOKEN_ADDRESS,
@@ -54,26 +56,19 @@
 		// TODO: get mintprice if paying contract
 		// summitContract.read.mintPrice();
 
-		//console.log(bytesToHex(toBytes($page.params.id)));
-		console.log(toHex($page.params.id))
-		const result = await bnmContract.simulate.transferAndCall(
-			[SUMMIT_RECEIVER_ADDRESS as `0x${string}`, BigInt(0), bytesToHex(toBytes(BigInt($page.params.id)))],
+		let txPromise = bnmContract.write.transferAndCall(
+			[
+				SUMMIT_RECEIVER_ADDRESS as `0x${string}`,
+				BigInt(0),
+				bytesToHex(toBytes(BigInt($page.params.id)))
+			],
 			{
 				account: $userAddress! as `0x${string}`
 			}
 		);
-		console.log(`calculated gas: ${result}`)
-		
-
-		let txPromise = bnmContract.write.transferAndCall(
-			[SUMMIT_RECEIVER_ADDRESS as `0x${string}`, BigInt(0), bytesToHex(toBytes(BigInt($page.params.id)))],
-			{
-				account: $userAddress! as `0x${string}`,
-			}
-		);
 
 		return toast.promise<Awaited<typeof txPromise>>(txPromise, {
-			loading: 'Loading...',
+			loading: 'Sending Transaction...',
 			success: (hash) => {
 				return 'Transaction successful! \n' + hash;
 			},
@@ -94,10 +89,13 @@
 			alt={data.article.title}
 			class="rounded-xl"
 		/>
-		<h1 class="mt-10">The State of Expansive Communities on Farcaster</h1>
+		<h1 class="mt-10">{data.article.title}</h1>
 		<div class="flex items-center justify-between mt-6 not-prose">
 			<div class="flex items-center">
-				<a href={APP_LINKS.USER_PROFILE(data.article.author.name)} class="flex items-center group">
+				<a
+					href={APP_LINKS.USER_PROFILE(data.article.author.address)}
+					class="flex items-center group"
+				>
 					<Avatar.Root class="border">
 						<Avatar.Image src={data.article.author.avatar} alt={data.article.author.name} />
 						<Avatar.Fallback
@@ -108,7 +106,7 @@
 						</Avatar.Fallback>
 					</Avatar.Root>
 					<span class="ml-2 text-muted-foreground group-hover:text-foreground">
-						{data.article.author.name}
+						{data.article.author.name || data.article.author.address}
 					</span>
 				</a>
 			</div>
@@ -119,7 +117,7 @@
 						<Avatar.Root class="w-8 h-8 border-2">
 							<Avatar.Image src={supporter.avatar} alt={supporter.name} />
 							<Avatar.Fallback
-								>{data.article.author.avatar
+								>{supporter.name
 									.split(' ')
 									.map((chars) => chars[0])
 									.join()}

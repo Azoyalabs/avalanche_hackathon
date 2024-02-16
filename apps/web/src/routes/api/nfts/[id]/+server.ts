@@ -1,35 +1,46 @@
-import { json } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { AuthorAttribute, PreviewAttribute, PublishedAttribute } from '$lib/utils';
+import { supabase } from '$lib/supabase';
 
-const IN_APP_URL = (id: number | string) => `http://localhost:5173/articles/${id}`;
+const IN_APP_URL = (protocol: string, host: string, id: number | string) =>
+	`${protocol}//${host}/articles/${id}`;
+
 export const GET: RequestHandler = async ({ params, url }) => {
+	const { data, error: err } = await supabase.from('article').select('*').limit(1).single();
 	// NOTE: most metadata stuff is explained on opensea -> https://docs.opensea.io/docs/metadata-standards
-	const nft = {
-		description: 'Short description of the article',
-		// This is the URL that will appear below the asset's image on OpenSea and will allow users to leave OpenSea and view the item on your site.
-		external_url: IN_APP_URL(params.id),
-		image: `${url.href}/render`,
-		name: 'Title of the article',
-		attributes: [
-			{
-				trait_type: 'Author',
-				value: '0xmon_kul'
-			},
-			{
-				display_type: 'date',
-				trait_type: 'Published',
-				// Pass in a unix timestamp (seconds) as the value.
-				value: Math.floor(new Date().valueOf())
-			},
-			{
-				trait_type: 'Preview',
-				value: 'This is a metadata contained preview'
-			}
-		]
-	};
+	console.error(err);
 
-	return json(nft);
+	if (data) {
+		const external_url = IN_APP_URL(url.protocol, url.host, params.id);
+		const nft = {
+			description: data.description,
+			// This is the URL that will appear below the asset's image on OpenSea and will allow users to leave OpenSea and view the item on your site.
+			external_url,
+			image: `${url.href}/render`,
+			name: data.title,
+			attributes: [
+				{
+					trait_type: 'Author',
+					value: data.author_address
+				},
+				{
+					display_type: 'date',
+					trait_type: 'Published',
+					// Pass in a unix timestamp (seconds) as the value.
+					value: new Date(data.publication_date!).valueOf() //new Date(data.publication_date!).valueOf() //Math.floor(new Date().valueOf())
+				},
+				{
+					trait_type: 'Preview',
+					value: `${data.full_body!.substring(0, 140)}...`
+				}
+			]
+		};
+
+		return json(nft);
+	} else {
+		error(404);
+	}
 };
 export type ExpectedResponse = {
 	name: string;

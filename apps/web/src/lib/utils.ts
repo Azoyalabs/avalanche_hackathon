@@ -80,7 +80,6 @@ export function getRelevantAttribute<T extends { trait_type: TraitTypes; value: 
 	attributes: Attribute[]
 ): T {
 	const attribute = attributes.find((a) => a.trait_type === key)!;
-	console.log('attribute: %j', attribute);
 	return attribute as unknown as T;
 }
 

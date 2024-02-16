@@ -27,6 +27,9 @@
 	<section class="pt-12 space-y-6">
 		<div class="flex flex-col items-center">
 			<div class="w-20 overflow-hidden rounded-lg">
+				{#if data.userAvatar}
+					<img src="{data.userAvatar}" alt="">
+				{:else}
 				<AvatarGenerator
 					props={{
 						name: data.userName || $page.params.name,
@@ -34,6 +37,7 @@
 						square: true
 					}}
 				></AvatarGenerator>
+				{/if}
 			</div>
 			<h1 class="mt-2 text-2xl font-bold">
 				{data.userName ?? $page.params.name}
@@ -93,7 +97,7 @@
 		</div>
 	</section>
 
-	{#if $currentLink !== LayoutLink.Profile}
+	{#if !$isCurrentUser}
 		<SubscriptionCard name={$page.params.name}></SubscriptionCard>
 	{/if}
 	<section>

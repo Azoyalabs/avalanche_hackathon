@@ -11,12 +11,15 @@
 			name: string;
 			avatar: string;
 		};
+		url: string;
 	};
+
+	console.log(`${article.url}`);
 </script>
 
 <a
 	class="@container hover:border-foreground/40 group block w-full overflow-hidden rounded-xl border duration-300"
-	href={APP_LINKS.ARTICLE('hey')}
+	href={article.url}
 >
 	<div class="@lg:flex h-full gap-2">
 		<img
@@ -44,9 +47,10 @@
 				</span>
 			</div>
 
-			<div class="relative pt-6 overflow-y-hidden text-sm text-muted-foreground h-24 @xl:max-h-none">
+			<div
+				class="text-muted-foreground @xl:max-h-none relative h-24 overflow-y-hidden pt-6 text-sm"
+			>
 				{article.preview}
-
 				<div
 					class="@xl:hidden from-background/0 via-background-00 to-background/60 absolute inset-0 bg-gradient-to-b"
 				></div>

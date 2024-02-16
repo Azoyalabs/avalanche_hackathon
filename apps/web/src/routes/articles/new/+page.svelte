@@ -5,9 +5,33 @@
 
 	import 'easymde/dist/easymde.min.css';
 	import { Notebook, Upload } from 'lucide-svelte';
-	import { onMount } from 'svelte';
-	const id = crypto.randomUUID();
+	import { onDestroy, onMount } from 'svelte';
+	import type * as Monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
+	let editor: Monaco.editor.IStandaloneCodeEditor;
+	let monaco: typeof Monaco;
+	let editorContainer: HTMLElement;
+
+	onMount(async () => {
+		// Import our 'monaco.ts' file here
+		// (onMount() will only be executed in the browser, which is what we want)
+		monaco = (await import('./monaco')).default;
+
+		// Your monaco instance is ready, let's display some code!
+		const editor = monaco.editor.create(editorContainer, {
+			theme: 'vs-dark'
+		});
+		const model = monaco.editor.createModel('# Hello from summit', 'markdown');
+		editor.setModel(model);
+	});
+
+	onDestroy(() => {
+		monaco?.editor.getModels().forEach((model) => model.dispose());
+		editor?.dispose();
+	});
+
+	const id = crypto.randomUUID();
+	/*
 	onMount(() => {
 		return;
 		async function initEasyMDE() {
@@ -21,7 +45,7 @@
 
 		//return () => easyMDE.cleanup();
 		return cleanup;
-	});
+	});*/
 
 	export let contractFileList: FileList | null = null;
 
@@ -80,10 +104,27 @@
 	</div>
 
 	<div class="flex flex-col w-full gap-2">
+		<div class="flex items-center justify-between">
+			<Label for="editor">Content</Label>
+			<div class="text-xs">
+				This editor uses Markdown (link)
+			</div>
+		</div>
+
+		<div
+			id="editor"
+			bind:this={editorContainer}
+			class="dark h-[600px] w-full rounded-md border"
+		></div>
+	</div>
+
+	<!-- 
+	<div class="flex flex-col w-full gap-2">
 		<Label for={id}>Content</Label>
 
 		<textarea {id} class="border border-red-500 font-nunito"></textarea>
 	</div>
+	 -->
 
 	<div class="flex flex-col w-full max-w-sm gap-2">
 		<Label for={id}>Price</Label>

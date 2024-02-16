@@ -51,7 +51,6 @@
 	$: address = derived(userStore.address, ($address) => $address);
 
 	async function connectToParticle() {
-		console.dir(config);
 		const particle = new ParticleConnect(config);
 		const provider = (await particle.connect()) as EVMProvider;
 		const store = await userStore.connect(provider);
