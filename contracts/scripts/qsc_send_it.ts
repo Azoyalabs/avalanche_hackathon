@@ -100,7 +100,7 @@ async function main() {
             "0x",
             0,
             BigInt(0), //BigInt(0),
-            [admin_account.address.toString(), "10"],
+            [],//[admin_account.address.toString(), "10"],
             [],
             BigInt(4179), //BigInt(4179),
             300000,
