@@ -6,8 +6,14 @@
 	import { page } from '$app/stores';
 	import FeedbackButton from '$lib/ui/app/FeedbackButton/FeedbackButton.svelte';
 	import { getContext } from 'svelte';
-	import { formatERC20 } from '$lib/utils';
+	import { formatERC20, transactionToaster } from '$lib/utils';
 	import { getUserStoreState } from '$lib/state';
+	import { createWalletClient, getContract } from 'viem';
+	import { SUMMIT_ADDRESS } from '$lib/constants';
+	import { abi as SummitABI } from '$lib/contracts/summit';
+	import { avalancheFuji } from 'viem/chains';
+	import { Sun, Moon } from 'lucide-svelte';
+	import { toggleMode } from 'mode-watcher';
 
 	setLayoutContext(LayoutLink.Profile);
 
@@ -17,7 +23,28 @@
 	$: referalLink = `${$page.url.host}?ref=${$page.params.name}`;
 	$: profileLink = `${$page.url.toString()}`;
 
-	const userStore = getUserStoreState();
+	const { client: walletClient, address } = getUserStoreState();
+
+	$: summitWriter = getContract({
+		abi: SummitABI,
+		address: SUMMIT_ADDRESS,
+		client: $walletClient!
+	});
+
+	async function claimRewards() {
+		const tx = summitWriter.write.withdraw({
+			account: $address!
+		});
+
+		await $walletClient!.switchChain({
+			//id: bscTestnet.id
+			id: avalancheFuji.id
+		});
+
+		await transactionToaster(tx);
+
+		rewards = summitClient.read.aggregated([$page.params.name]);
+	}
 </script>
 
 <div class="grid gap-6 md:grid-cols-2">
@@ -35,8 +62,13 @@
 			{/await}
 		</Card.Content>
 		<Card.Footer>
-			<!-- TODO: interact, claim rewards -->
-			<Button>Claim Rewards</Button>
+			{#await rewards then resolved}
+				{#if resolved === BigInt(0)}
+					<Button disabled>No Rewards to claim</Button>
+				{:else}
+					<Button on:click={claimRewards}>Claim Rewards</Button>
+				{/if}
+			{/await}
 		</Card.Footer>
 	</Card.Root>
 
@@ -103,12 +135,21 @@
 	<Card.Root>
 		<Card.Header>
 			<Card.Title>Settings</Card.Title>
-			<Card.Description>settings description</Card.Description>
+			<Card.Description>Customize your stay</Card.Description>
 		</Card.Header>
 
 		<Card.Content>
-			<div>
-				<div>night / day mode</div>
+			<div class="flex items-center">
+				<Button on:click={toggleMode} variant="outline" size="icon">
+					<Sun
+						class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+					/>
+					<Moon
+						class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+					/>
+				</Button>
+
+				<div class="ml-2 text-sm">Toggle Theme</div>
 			</div>
 		</Card.Content>
 	</Card.Root>

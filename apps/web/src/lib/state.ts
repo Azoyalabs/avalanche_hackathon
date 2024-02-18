@@ -1,15 +1,12 @@
 import { type EVMProvider, ParticleConnect } from '@particle-network/connect';
 import { getContext, setContext } from 'svelte';
 import { derived, writable } from 'svelte/store';
-import { createWalletClient, custom, type WalletClient } from 'viem';
+import { createWalletClient, custom, getContract } from 'viem';
 import { avalancheFuji } from 'viem/chains';
-
-export const USER_ADDRESS = writable<string | null>(null);
-export const BnM_BALANCE = writable<bigint>(BigInt(0));
+import { abi } from './contracts/ERC20/abi';
+import { BnM_TOKEN_ADDRESS } from './constants';
 
 export const PARTICLE_CONNECTION = writable<ParticleConnect | null>(null);
-export const PROVIDER = writable<EVMProvider | null>(null);
-export const WALLET_CLIENT = writable<WalletClient | null>(null);
 
 const USER_CTX = 'USER_CTX';
 
@@ -35,13 +32,25 @@ export function createUserStore(initialProvider: EVMProvider | null) {
 			return null;
 		}
 	});
-	const address = writable<string | null>(null);
+	const address = writable<`0x${string}` | null>(null);
+	const BNM_BALANCE = writable<bigint>(BigInt(0));
+
 	walletClient.subscribe(async (wc) => {
 		if (wc) {
 			const add = await wc.getAddresses();
 			address.set(add[0]);
+
+			const BnMContract = getContract({
+				abi: abi,
+				address: BnM_TOKEN_ADDRESS,
+				client: wc
+			});
+
+			const bal = await BnMContract.read.balanceOf([add[0]]);
+			BNM_BALANCE.set(BigInt(bal));
 		} else {
 			address.set(null);
+			BNM_BALANCE.set(BigInt(0));
 		}
 	});
 
@@ -65,6 +74,7 @@ export function createUserStore(initialProvider: EVMProvider | null) {
 		client: walletClient,
 		address,
 		provider,
-		isConnected: derived(address, ($add) => $add !== null)
+		isConnected: derived(address, ($add) => $add !== null),
+		balance: BNM_BALANCE
 	};
 }

@@ -57,15 +57,18 @@ export const load = (async ({ params, fetch }) => {
 			})
 		);
 	}
-
+	
 	const { data: publishedArticles } = await supabase
 		.from('article')
 		.select('*')
 		.filter('author_address', 'eq', params.name);
 
-	
 	return {
-		publishedArticles: publishedArticles!.map((a) => ({ ...a, full_body: `${a.full_body!.substring(0,140)}...` })),
+		publishedArticles: publishedArticles!.map((a) => ({
+			...a,
+			full_body: '',
+			description: `${a.full_body!.substring(0, 140)}...`
+		})),
 		ownedArticles: backedArticles,
 		userName,
 		userAvatar

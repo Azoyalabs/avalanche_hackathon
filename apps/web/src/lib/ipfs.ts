@@ -24,7 +24,6 @@ export async function uploadFile() {
 		})
 	});
 	const json = await resp.json();
-	console.dir(json);
 	return json;
 }
 

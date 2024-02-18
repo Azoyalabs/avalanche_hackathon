@@ -16,7 +16,7 @@
 					a.attributes
 				).value
 			),
-			preview: getRelevantAttribute<{ trait_type: 'Preview'; value: string }>(
+			description: getRelevantAttribute<{ trait_type: 'Preview'; value: string }>(
 				'Preview',
 				a.attributes
 			).value,

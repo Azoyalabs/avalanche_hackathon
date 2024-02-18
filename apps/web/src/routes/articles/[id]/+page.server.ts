@@ -27,9 +27,13 @@ export const load = (async ({ fetch, params, locals }) => {
 
 	const { userAddress } = locals;
 
-	const article = await supabase.from('article').select('*').limit(1).single();
+	const article = await supabase
+		.from('article')
+		.select('*')
+		.filter('id', 'eq', params.id)
+		.limit(1)
+		.single();
 
-	// TODO: still needs to be tested
 	if (!article.data) {
 		error(404, "This article doesn't exist");
 	}
@@ -45,7 +49,17 @@ export const load = (async ({ fetch, params, locals }) => {
 	const parsedToken = parseTokenId(BigInt(id));
 	const isPaidArticle = parsedToken.isPaying;
 
+	// TODO: make sure this is ok
 	let hasAccess = !isPaidArticle && userAddress !== undefined;
+
+	const summitClient = getContract({
+		address: SUMMIT_ADDRESS,
+		abi: SummitABI,
+		client: createClient({
+			transport: http(),
+			chain: avalancheFuji
+		})
+	});
 
 	// TODO: do we want a "has backed" field?
 	if (userAddress) {
@@ -61,15 +75,6 @@ export const load = (async ({ fetch, params, locals }) => {
 			params.id
 		);
 		*/
-
-		const summitClient = getContract({
-			address: SUMMIT_ADDRESS,
-			abi: SummitABI,
-			client: createClient({
-				transport: http(),
-				chain: avalancheFuji
-			})
-		});
 
 		const userBalance = await summitClient.read.balanceOf([
 			userAddress! as `0x${string}`,
@@ -99,12 +104,6 @@ export const load = (async ({ fetch, params, locals }) => {
 		}
 	}
 
-	// ------- SUPPORTERS INFO ---------
-	// TODO: get supporters
-	const minterAvatars = new Array(4).fill(
-		'https://images.mirror-media.xyz/publication-images/N-MMkKx65X408ZIdF99M8.png?height=592&width=592'
-	) as string[];
-
 	return {
 		article: {
 			title: articleNFT.name,
@@ -116,10 +115,6 @@ export const load = (async ({ fetch, params, locals }) => {
 			content: content,
 			access: hasAccess,
 			banner: article.data?.header_image,
-			minters: minterAvatars.map((a) => ({
-				avatar: a,
-				name: 'minter name'
-			})),
 			isPaid: isPaidArticle
 		}
 	};

@@ -36,27 +36,32 @@
 	import { setContext } from 'svelte';
 	import { GITHUB_LINK, TWITTER_LINK } from '$lib/constants.js';
 
-	// TODO: support other chains for crosschain minting
+	import { MetaTags } from 'svelte-meta-tags';
+	import { ModeWatcher } from 'mode-watcher';
+
+	export let data;
+	setContext('SUMMIT', data.contracts.SUMMIT_CONTRACT);
+
 	const config: ConnectConfig = {
 		projectId: PUBLIC_PARTICLE_PROJECT_ID,
 		clientKey: PUBLIC_PARTICLE_CLIENT_KEY,
 		appId: PUBLIC_PARTICLE_APP_ID,
+		// FIXME: we're missing some testnets
 		chains: [AvalancheTestnet as Chain, BNBChainTestnet as Chain, EthereumGoerli as Chain]
 	};
-	export let data;
-
-	setContext('SUMMIT', data.contracts.SUMMIT_CONTRACT);
 
 	const userStore = setUserStoreState(null);
 	$: address = derived(userStore.address, ($address) => $address);
+	$: BNM_BALANCE = userStore.balance;
 
 	async function connectToParticle() {
 		const particle = new ParticleConnect(config);
 		const provider = (await particle.connect()) as EVMProvider;
 		const store = await userStore.connect(provider);
 
-		// TODO: How do we switch network with particle?
-		 
+		// TODO: How do we switch network with particle? Looks like through particle is the answer
+		particle.switchChain(AvalancheTestnet);
+
 		// Wait for address query
 		await delay(200);
 		await fetch('/auth', {
@@ -74,19 +79,50 @@
 		if (userStore) {
 			userStore.disconnect();
 		}
-		
 	}
 
 	$: isConnected = derived(userStore.isConnected, ($connection) => $connection);
 </script>
 
+<MetaTags
+	title="Home"
+	titleTemplate="%s | Summit - Web3 publishing"
+	description="Built on Avalanche, Summit is a Web3 publishing platform built for the Avalanche Frontier Hackathon."
+	canonical="https://summit-azoyalabs.vercel.app/"
+	openGraph={{
+		url: 'https://summit-azoyalabs.vercel.app/',
+		title: 'Summit',
+		description:
+			'Built on Avalanche, Summit is a Web3 publishing platform built for the Avalanche Frontier Hackathon',
+		images: [
+			{
+				url: 'https://cdn.dorahacks.io/static/files/18d061b7c8467399d491bd84b13819e1.jpg@512h.webp',
+				width: 800,
+				height: 600,
+				alt: 'Dorahacks Avalanche Frontier'
+			}
+		],
+		siteName: 'Summit'
+	}}
+	twitter={{
+		handle: '@azoyalabs',
+		site: '@azoyalabs',
+		cardType: 'summary_large_image',
+		title: 'Summit - Web3 publishing',
+		description:
+			'Built on Avalanche, Summit is a Web3 publishing platform built for the Avalanche Frontier Hackathon',
+		image: 'https://cdn.dorahacks.io/static/files/18d061b7c8467399d491bd84b13819e1.jpg@512h.webp'
+	}}
+/>
+
 <Toaster />
+<ModeWatcher />
 
 <header class="py-3 border-b">
 	<div class="container flex items-center justify-between">
 		<a class="flex items-center" href="/">
-			<img src="/favicon.png" alt="logo" class="w-8 h-8" />
-			<span class="ml-2 text-2xl font-black uppercase font-nunito">Summit</span>
+			<img src="/Summit.png" alt="logo" class="w-8 h-8" />
+			<span class="hidden ml-2 text-2xl font-black uppercase font-nunito md:block">Summit</span>
 		</a>
 		<div class="flex items-center space-x-3">
 			{#if $isConnected}
@@ -94,12 +130,12 @@
 
 				<Sheet.Root>
 					<Sheet.Trigger class="hidden md:block">
-						<Button size="icon" variant="ghost" class="rounded-full">
+						<Button size="icon" variant="ghost" class="overflow-hidden rounded-lg">
 							<AvatarGenerator
 								props={{
-									name: 'archway18m26lkjly2hkck25t7sdsrnu72x0g6gxdxxr4q',
+									name: $address,
 									colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
-									square: false
+									square: true
 								}}
 							></AvatarGenerator>
 						</Button>
@@ -107,12 +143,12 @@
 					<Sheet.Content>
 						<Sheet.Header>
 							<div class="flex items-center space-x-3">
-								<div class="h-9 w-9">
+								<div class="overflow-hidden rounded-lg h-9 w-9">
 									<AvatarGenerator
 										props={{
-											name: 'archway18m26lkjly2hkck25t7sdsrnu72x0g6gxdxxr4q',
+											name: $address,
 											colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
-											square: false
+											square: true
 										}}
 									></AvatarGenerator>
 								</div>
@@ -127,7 +163,7 @@
 												builders={[builder]}
 												variant="ghost"
 												size="sm"
-												class="px-0 py-0 text-muted-foreground hover:bg-transparent"
+												class="px-0 py-0 leading-4 text-muted-foreground hover:bg-transparent"
 												>View Profile</Button
 											>
 										</Sheet.Close>
@@ -135,7 +171,7 @@
 								</div>
 							</div>
 						</Sheet.Header>
-						<SheetBody></SheetBody>
+						<SheetBody balance={$BNM_BALANCE}></SheetBody>
 						<Sheet.Footer>
 							<Button variant="ghost" on:click={() => disconnect()}>Disconnect</Button>
 						</Sheet.Footer>
@@ -144,24 +180,25 @@
 
 				<Drawer.Root>
 					<Drawer.Trigger class="md:hidden">
-						<Button size="icon" variant="ghost" class="rounded-full">
+						<Button size="icon" variant="ghost" class="overflow-hidden rounded-lg">
 							<AvatarGenerator
 								props={{
-									name: 'archway18m26lkjly2hkck25t7sdsrnu72x0g6gxdxxr4q',
+									name: $address,
 									colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
-									square: false
+									square: true
 								}}
 							></AvatarGenerator>
 						</Button>
 					</Drawer.Trigger>
 					<Drawer.Content>
+						<!-- FIXME: link up profile here too -->
 						<Drawer.Header class="flex items-center space-x-3">
-							<div class="h-9 w-9">
+							<div class="overflow-hidden rounded-lg h-9 w-9">
 								<AvatarGenerator
 									props={{
-										name: 'archway18m26lkjly2hkck25t7sdsrnu72x0g6gxdxxr4q',
+										name: $address,
 										colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
-										square: false
+										square: true
 									}}
 								></AvatarGenerator>
 							</div>
@@ -170,7 +207,7 @@
 								<Drawer.Description>View Profile</Drawer.Description>
 							</div>
 						</Drawer.Header>
-						<SheetBody></SheetBody>
+						<SheetBody balance={$BNM_BALANCE}></SheetBody>
 						<Drawer.Footer>
 							<Button variant="ghost" on:click={() => disconnect()}>Disconnect</Button>
 						</Drawer.Footer>
@@ -197,9 +234,7 @@
 	<div class="px-6 py-20 mx-auto overflow-hidden max-w-7xl sm:py-24 lg:px-8">
 		<nav class="-mb-6 columns-2 sm:flex sm:justify-center sm:space-x-12" aria-label="Footer">
 			<div class="pb-6">
-				<a href="/" class="text-sm leading-6 text-muted-foreground hover:text-foreground"
-					>Home</a
-				>
+				<a href="/" class="text-sm leading-6 text-muted-foreground hover:text-foreground">Home</a>
 			</div>
 			<div class="pb-6">
 				<a href="/analytics" class="text-sm leading-6 text-muted-foreground hover:text-foreground"
@@ -208,7 +243,7 @@
 			</div>
 		</nav>
 		<div class="flex justify-center mt-10 space-x-10">
-			<a href="{TWITTER_LINK}" class="text-muted-foreground hover:text-foreground">
+			<a href={TWITTER_LINK} class="text-muted-foreground hover:text-foreground">
 				<span class="sr-only">X</span>
 				<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path
@@ -216,7 +251,7 @@
 					/>
 				</svg>
 			</a>
-			<a href="{GITHUB_LINK}" class="text-muted-foreground hover:text-foreground">
+			<a href={GITHUB_LINK} class="text-muted-foreground hover:text-foreground">
 				<span class="sr-only">GitHub</span>
 				<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path

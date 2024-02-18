@@ -16,6 +16,7 @@
 			title: a.title!,
 			publishDate: new Date(a.publication_date!),
 			preview: a.full_body,
+			description: a.description,
 			author: {
 				name: a.author_address,
 				address: a.author_address,

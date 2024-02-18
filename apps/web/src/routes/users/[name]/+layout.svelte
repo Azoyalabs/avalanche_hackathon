@@ -28,19 +28,25 @@
 		<div class="flex flex-col items-center">
 			<div class="w-20 overflow-hidden rounded-lg">
 				{#if data.userAvatar}
-					<img src="{data.userAvatar}" alt="">
+					<img src={data.userAvatar} alt="" />
 				{:else}
-				<AvatarGenerator
-					props={{
-						name: data.userName || $page.params.name,
-						colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
-						square: true
-					}}
-				></AvatarGenerator>
+					<AvatarGenerator
+						props={{
+							name: data.userName || $page.params.name,
+							colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
+							square: true
+						}}
+					></AvatarGenerator>
 				{/if}
 			</div>
-			<h1 class="mt-2 text-2xl font-bold">
-				{data.userName ?? $page.params.name}
+			<h1 class="mt-2 text-lg font-bold lg:text-2xl">
+				{#if data.userName}
+					{data.userName}
+				{:else}
+					{$page.params.name.substring(0, 8)}...{$page.params.name.substring(
+						$page.params.name.length - 8
+					)}
+				{/if}
 			</h1>
 			{#if data.userName}
 				<div class="mt-1 text-sm text-muted-foreground">
