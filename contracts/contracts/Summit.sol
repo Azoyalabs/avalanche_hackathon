@@ -160,6 +160,14 @@ contract Summit is
         }
     }
 
+
+    function adminSetAccessStatus(address user, AccessStatus newStatus) external onlyOwner {
+        accessStatusTracker[user] = newStatus;
+
+        emit AccessUpdated(user, newStatus);
+    }
+
+
     // what do i do with mint batch? need safety like normal "mint" method
     // just remove it I guess
     /*

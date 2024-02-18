@@ -875,6 +875,16 @@ export const summitAbi = [
   },
   {
     type: 'function',
+    inputs: [
+      { name: 'user', internalType: 'address', type: 'address' },
+      { name: 'newStatus', internalType: 'enum AccessStatus', type: 'uint8' },
+    ],
+    name: 'adminSetAccessStatus',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
     inputs: [{ name: '', internalType: 'address', type: 'address' }],
     name: 'aggregated',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],

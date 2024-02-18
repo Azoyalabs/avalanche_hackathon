@@ -12,7 +12,8 @@
     "modify:access-admin": "esrun scripts/modify_admin_access_control.ts",
     "update:uri": "esrun scripts/update_uri.ts",
     "chainlink:scam_check": "esrun scripts/qsc_send_it.ts",
-    "deploy:consumer": "esrun scripts/deploy_function_consumer.ts"
+    "deploy:consumer": "esrun scripts/deploy_function_consumer.ts",
+    "admin:set-access": "esrun scripts/admin_set_access_status.ts"
   },
   "description": "",
   "main": "index.js",
