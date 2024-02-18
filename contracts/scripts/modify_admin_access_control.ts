@@ -2,7 +2,7 @@ import { createWalletClient, createPublicClient, http } from "viem";
 
 import { avalancheFuji } from 'viem/chains'
 import { mnemonicToAccount } from 'viem/accounts'
-import { SUMMIT_ADDRESS } from "./constants";
+import { SUMMIT_ADDRESS, FUNCTION_CONSUMER } from "./constants";
 import { summitAbi } from "../generated/contractAbis";
 
 import * as viem from "viem";
@@ -32,9 +32,9 @@ async function main() {
     })
 
     const res = await summitContract.write.setAccessControlAdmin(
-        [account_new_controller.address],
+        [FUNCTION_CONSUMER], //[account_new_controller.address],
         {
-            account: wallet.account
+            account: account_new_controller
         }
     )
 

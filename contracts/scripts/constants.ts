@@ -9,8 +9,11 @@ export const SUMMIT_ADDRESS = "0x30cdaa09e7a763ca2521fe6a9710776bd7a746e6"
 export const RECEIVER_ADDRESS = "0xd3d7cd1107fe49720eb6acfd0c7c33d8a26f467f"
 */
 
-export const SUMMIT_ADDRESS = "0xb02dd60b0d337ddd6f99c98eae0292a51f514292"
-export const RECEIVER_ADDRESS = "0x6c55574d10045b5da20e87709d7a24f24c943aec"
+export const SUMMIT_ADDRESS = "0x392b22e6974be850f5d6a633b92587bde6b0b49f"; //"0xb02dd60b0d337ddd6f99c98eae0292a51f514292"
+export const RECEIVER_ADDRESS = "0x3e8008176294ae78bc7a4f6a59d16731d7a22bab"; //"0x6c55574d10045b5da20e87709d7a24f24c943aec"
+
+
+export const FUNCTION_CONSUMER = "0x739f201d39d262bacf4c8f9093a832e6a6461bef"; //"0xbcd130666450729986437b8db38733d11345e7f2";
 
 
 /// Taken from: https://docs.chain.link/ccip/supported-networks/v1_2_0/testnet
