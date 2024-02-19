@@ -57,7 +57,9 @@ export const load = (async ({ params, fetch }) => {
 			})
 		);
 	}
-	
+
+	backedArticles = backedArticles.filter((a) => a?.message === undefined)
+
 	const { data: publishedArticles } = await supabase
 		.from('article')
 		.select('*')

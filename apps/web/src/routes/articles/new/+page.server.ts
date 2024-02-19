@@ -95,9 +95,8 @@ export const actions = {
 			title: form.data.title,
 			tag: 'unknown'
 		});
-		if(inserted.error){
-			console.error(inserted.error)
-			
+		if (inserted.error) {
+			console.error(inserted.error);
 		}
 		return {
 			form,
