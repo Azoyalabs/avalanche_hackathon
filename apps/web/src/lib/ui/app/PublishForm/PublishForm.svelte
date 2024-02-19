@@ -16,7 +16,6 @@
 	let:config
 	enctype="multipart/form-data"
 	class="space-y-6"
-	debug={true}
 >
 	<Form.Field {config} name="title">
 		<Form.Item>
