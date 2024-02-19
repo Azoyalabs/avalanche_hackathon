@@ -39,7 +39,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
 				},
 				{
 					trait_type: 'Preview',
-					value: `${data.full_body!.substring(0, 140)}...`
+					value: data.description
 				},
 				{
 					trait_type: 'Header',
