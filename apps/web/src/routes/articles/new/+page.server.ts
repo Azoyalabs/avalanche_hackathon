@@ -47,7 +47,6 @@ export const actions = {
 
 		const uploaded = await uploadFile(image);
 
-
 		/*
 		const account = mnemonicToAccount(WHITELISTER_PASSPHARE);
 
@@ -96,6 +95,10 @@ export const actions = {
 			title: form.data.title,
 			tag: 'unknown'
 		});
+		if(inserted.error){
+			console.error(inserted.error)
+			
+		}
 		return {
 			form,
 			tokenID
