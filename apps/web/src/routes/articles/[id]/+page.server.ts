@@ -85,6 +85,8 @@ export const load = (async ({ fetch, params, locals }) => {
 		}
 	}
 
+
+
 	// TODO: Do we need this? all the info should be coming from our backend
 	const articleNFT = (await (await fetch(`/api/nfts/${id}`)).json()) as ExpectedResponse;
 
@@ -112,7 +114,7 @@ export const load = (async ({ fetch, params, locals }) => {
 				address: article.data!.author_address,
 				avatar: authorAvatar
 			},
-			content: content,
+			content: hasAccess ? content : content.substring(0, 200),
 			access: hasAccess,
 			banner: article.data?.header_image,
 			isPaid: isPaidArticle

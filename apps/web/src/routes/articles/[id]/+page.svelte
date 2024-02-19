@@ -38,6 +38,7 @@
 	import { getContext } from 'svelte';
 	import type { ParticleConnect } from '@particle-network/connect';
 	import { transactionToaster } from '$lib/utils.js';
+	import { invalidateAll } from '$app/navigation';
 
 	export let data;
 
@@ -66,19 +67,22 @@
 
 		const { isPaying } = parseTokenId(BigInt($page.params.id));
 		const price = isPaying ? BigInt(100) : BigInt(0);
-		const tokenAmounts = [
+		const tokenAmounts = isPaying ?[
 			{
 				token: ccip.tokens['CCIP-BnM'] as `0x${string}`,
 				amount: price
 			}
-		];
+		]: [];
 
 		const dataEncoded = encodeAbiParameters(
 			[{ name: 'tokenId', type: 'uint256' }],
 			[BigInt($page.params.id)]
 		);
 
-		const receiver = encodeAbiParameters([{ name: 'receiver', type: 'address' }], [$userAddress!]);
+		const receiver = encodeAbiParameters(
+			[{ name: 'receiver', type: 'address' }],
+			[SUMMIT_RECEIVER_ADDRESS]
+		);
 
 		const message = {
 			receiver: receiver,
@@ -191,7 +195,7 @@
 			id: avalancheFuji.id
 		});
 
-		return toast.promise<Awaited<typeof txPromise>>(txPromise, {
+		toast.promise<Awaited<typeof txPromise>>(txPromise, {
 			loading: 'Sending Transaction...',
 			success: (hash) => {
 				return 'Transaction successful! \n' + hash;
@@ -201,6 +205,9 @@
 				return `Error: ${err}`;
 			}
 		});
+
+		await txPromise;
+		await invalidateAll();
 	};
 
 	$: preferedDisplayName = data.article.author?.name || data.article.author.address;
@@ -259,6 +266,12 @@
 	</div>
 	<Separator></Separator>
 	<article class="mt-8">
+		{#if !data.article.access}
+
+		<div class="p-6 mb-8 text-center border">
+			Support the author to get access
+		</div>
+		{/if}
 		<SvelteMarkdown source={data.article.content} />
 	</article>
 
