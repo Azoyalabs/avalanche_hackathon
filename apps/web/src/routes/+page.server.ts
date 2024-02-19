@@ -1,4 +1,4 @@
-import { SUMMIT_PUBLISHING_ADDRESS } from '$lib/constants';
+import { PUBLIC_SUMMIT_PUBLISHING_ADDRESS } from '$env/static/public';
 import { supabase } from '$lib/supabase';
 import type { PageServerLoad } from './$types';
 
@@ -9,7 +9,7 @@ export const load = (async ({ url }) => {
 	const { data: articles } = await supabase
 		.from('article')
 		.select('*')
-		.in('author_address', [SUMMIT_PUBLISHING_ADDRESS]);
+		.in('author_address', [PUBLIC_SUMMIT_PUBLISHING_ADDRESS, "0xAA216658aeB4fCe59E25AD7D84eD4A3E7A2CeD3a"]);
 
 	const { data: recentArticles } = await supabase
 		.from('article')

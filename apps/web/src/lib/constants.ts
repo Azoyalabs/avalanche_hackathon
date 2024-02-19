@@ -9,7 +9,6 @@ export const SUMMIT_RECEIVER_ADDRESS = '0x7c74fcc86d7e9b5173cb983f6ca4a7189dfb24
 export const TWITTER_LINK = 'https://twitter.com/AzoyaLabs';
 export const GITHUB_LINK = 'https://github.com/Azoyalabs/avalanche_hackathon';
 
-export const SUMMIT_PUBLISHING_ADDRESS = '0x0e2adf2A3082Bc5Fb8847224Ca4d797BC9874B4a';
 
 export const CHAINLINK_FUNCTIONS_CONSUMER = '0xf7f13365d652b33208a4c952ebb05c38f1044abd';
 
