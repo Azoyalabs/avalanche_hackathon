@@ -9,17 +9,17 @@
     },
     "exports": {
         ".": {
-            "import": "./dist/index.js",
-            "require": "./dist/cjs/index.cjs",
-            "types": "./dist/index.d.ts"
+            "import": "./lib/index.js",
+            "require": "./lib/cjs/index.cjs",
+            "types": "./lib/index.d.ts"
         }
     },
     "files": [
-        "./dist"
+        "./lib"
     ],
-    "module": "./dist/index.js",
-    "main": "./dist/cjs/index.cjs",
-    "types": "./dist/index.d.ts",
+    "module": "./lib/index.js",
+    "main": "./lib/cjs/index.cjs",
+    "types": "./lib/index.d.ts",
     "dependencies": {
         "viem": "^1.15.1"
     },

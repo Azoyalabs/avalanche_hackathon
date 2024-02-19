@@ -7,11 +7,11 @@
       "esModuleInterop": true,
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
-      "outDir": "./dist",
+      "outDir": "./lib",
       "rootDir": "./src",
       "declaration": true
     },
     "include": ["src/**/*.ts"],
-    "exclude": ["node_modules", "dist", "__tests__"]
+    "exclude": ["node_modules", "lib", "__tests__"]
   }
   
