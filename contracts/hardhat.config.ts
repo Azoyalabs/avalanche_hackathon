@@ -3,16 +3,14 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox-viem";
 import { mnemonicToAccount } from "viem/accounts";
 
+require("dotenv").config();
 
+import * as ethers from "ethers";
 
-require('dotenv').config()
+const mnemonic = process.env.ADMIN_PASSPHRASE ?? ethers.Wallet.createRandom().mnemonic!.phrase;
 
-import * as ethers from 'ethers';
-const mnemonic = process.env.ADMIN_PASSPHRASE!!;
 const wallet = ethers.Wallet.fromPhrase(mnemonic);
 const privateKey = wallet.privateKey;
-
-
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -20,20 +18,19 @@ const config: HardhatUserConfig = {
       {
         version: "0.8.22",
         settings: {
-          evmVersion: "paris"
-        }
+          evmVersion: "paris",
+        },
       },
       {
         version: "0.8.19",
         settings: {
-          evmVersion: "paris"
-        }
-      }
-
-    ]
+          evmVersion: "paris",
+        },
+      },
+    ],
   },
   paths: {
-    sources: "./contracts"
+    sources: "./contracts",
   },
   etherscan: {
     apiKey: {
@@ -44,19 +41,20 @@ const config: HardhatUserConfig = {
         network: "snowtrace",
         chainId: 43113,
         urls: {
-          apiURL: "https://api.routescan.io/v2/network/testnet/evm/43113/etherscan",
-          browserURL: "https://testnet.snowtrace.io"
-        }
-      }
-    ]
+          apiURL:
+            "https://api.routescan.io/v2/network/testnet/evm/43113/etherscan",
+          browserURL: "https://testnet.snowtrace.io",
+        },
+      },
+    ],
   },
   networks: {
     snowtrace: {
-      url: 'https://api.avax-test.network/ext/bc/C/rpc',
-      accounts: [privateKey]
+      url: "https://api.avax-test.network/ext/bc/C/rpc",
+      accounts: [privateKey],
     },
   },
-  defaultNetwork: "hardhat"
+  defaultNetwork: "hardhat",
 };
 
 export default config;

@@ -26,14 +26,16 @@
 				address: '0xthingy...split',
 				avatar: 'https://miro.medium.com/v2/resize:fill:24:24/1*OkvxzWk0qB6UnnGRo-aDAQ.png'
 			},
-			url: a.external_url
+			url: a.external_url,
+			banner: getRelevantAttribute<{ trait_type: 'Header'; value: string }>('Header', a.attributes)
+				.value
 		};
 	});
 </script>
 
-<section class="gap-6 mt-6">
+<section class="mt-6">
 	{#if backedArticles.length > 0}
-		<div class="grid md:grid-cols-2 xl:grid-cols-3">
+		<div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
 			{#each backedArticles as article, i}
 				<ArticleCard {article}></ArticleCard>
 			{/each}

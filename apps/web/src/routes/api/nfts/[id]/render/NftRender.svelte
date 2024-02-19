@@ -38,13 +38,13 @@
 		</div>
 
 		<div class="flex flex-col">
-			<MountainSnow class='w-8 h-8' />
+			<MountainSnow class="w-8 h-8" />
 			<div class="flex mt-1">Summit</div>
 		</div>
 	</div>
 
-	<div class="flex w-3/5 h-full" style="background-image: url({image});">
-		<!-- <img {src} class="w-full h-full" />  -->
+	<div class="flex flex-col items-center justify-center w-3/5 h-full">
+		<img src={image} class=" h-fit w-[400px]" width="400" height="600" />
 	</div>
 	<!-- <img {src} class="w-3/5 h-full" /> -->
 </div>

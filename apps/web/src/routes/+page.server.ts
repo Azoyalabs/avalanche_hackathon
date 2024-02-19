@@ -30,7 +30,8 @@ export const load = (async ({ url }) => {
 						address: a.author_address,
 						avatar: 'https://miro.medium.com/v2/resize:fill:24:24/1*OkvxzWk0qB6UnnGRo-aDAQ.png'
 					},
-					url: IN_APP_URL(url.protocol, url.host, a.id)
+					url: IN_APP_URL(url.protocol, url.host, a.id),
+					banner: a.header_image
 				};
 			})
 	};

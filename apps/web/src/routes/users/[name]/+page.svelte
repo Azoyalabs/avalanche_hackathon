@@ -17,6 +17,7 @@
 			publishDate: new Date(a.publication_date!),
 			preview: a.full_body,
 			description: a.description,
+			banner: a.header_image,
 			author: {
 				name: a.author_address,
 				address: a.author_address,
@@ -27,9 +28,9 @@
 	});
 </script>
 
-<section class="gap-6 mt-6">
+<section class="mt-6">
 	{#if preppedArticles.length > 0}
-		<div class="grid md:grid-cols-2 xl:grid-cols-3">
+		<div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
 			{#each preppedArticles as article, i}
 				<ArticleCard {article}></ArticleCard>
 			{/each}

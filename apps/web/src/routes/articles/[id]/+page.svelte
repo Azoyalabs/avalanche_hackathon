@@ -26,7 +26,6 @@
 	import { abi as BNMABI } from '$lib/contracts/ERC20/abi.js';
 	import { page } from '$app/stores';
 	import type { ChainInfo } from '@particle-network/chains';
-	import { goto } from '$app/navigation';
 
 	export let data;
 
@@ -54,9 +53,9 @@
 				BigInt(0),
 				bytesToHex(toBytes(BigInt($page.params.id)))
 			],
+			// @ts-expect-error viem type hinting is unable to figure out the network hee
 			{
-				account: $userAddress! as `0x${string}`,
-				value: undefined
+				account: $userAddress! as `0x${string}`
 			}
 		);
 
@@ -83,12 +82,6 @@
 		const bnmContract = getContract({
 			address: BnM_TOKEN_ADDRESS,
 			abi: BNMABI,
-			client: walletClient
-		});
-
-		const summitContract = getContract({
-			address: SUMMIT_ADDRESS,
-			abi: summitABI,
 			client: walletClient
 		});
 
@@ -122,17 +115,15 @@
 			}
 		});
 	};
+
+	$: preferedDisplayName = data.article.author?.name || data.article.author.address;
 </script>
 
 <div
 	class="container max-w-4xl space-y-8 prose-sm prose dark:prose-invert prose-orange sm:prose-base lg:prose-xl prose-img:rounded-xl smoothscroll"
 >
 	<div class="">
-		<img
-			src="https://images.mirror-media.xyz/publication-images/yClkyV3zTvmXOt1cvcksN.png?height=596&amp;width=1192"
-			alt={data.article.title}
-			class="rounded-xl"
-		/>
+		<img src={data.article.banner} alt={data.article.title} class="rounded-xl max-h-[300px] object-cover w-full object-center" />
 		<h1 class="mt-10">{data.article.title}</h1>
 		<div class="flex items-center justify-between mt-6 not-prose">
 			<div class="flex items-center">
@@ -143,7 +134,7 @@
 					<Avatar.Root class="border">
 						<Avatar.Image src={data.article.author.avatar} alt={data.article.author.name} />
 						<Avatar.Fallback
-							>{data.article.author.name
+							>{(data.article.author?.name || data.article.author?.address)
 								.split(' ')
 								.map((chars) => chars[0])
 								.join()}
@@ -182,7 +173,7 @@
 	</article>
 
 	<div class="grid grid-cols-2 grid-rows-1 gap-8 not-prose">
-		<SubscriptionCard name={data.article.author.name}></SubscriptionCard>
+		<SubscriptionCard name={preferedDisplayName}></SubscriptionCard>
 
 		<Card.Root class="relative">
 			<Card.Header>
@@ -227,7 +218,7 @@
 			<Card.Header>
 				<Card.Title>Show your support</Card.Title>
 				<Card.Description class="">
-					<div>Get a NFT when supporting the Author</div>
+					Get a NFT when supporting the Author
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="">

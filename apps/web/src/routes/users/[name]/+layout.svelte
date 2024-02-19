@@ -58,7 +58,7 @@
 					<h3 class="font-medium text-white">Customize your profile using Avvyy</h3>
 
 					<div class="flex items-center justify-between">
-						Avvvyy is the leading avalanche name service <Button href="" variant="ghost"
+						Avvvyy is the leading avalanche name service <Button href="https://avvy.domains/" target="_blank" variant="ghost"
 							>Get your own domain</Button
 						>
 					</div>

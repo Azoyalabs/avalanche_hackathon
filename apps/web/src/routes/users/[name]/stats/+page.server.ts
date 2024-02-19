@@ -11,8 +11,6 @@ import type { AccessStatus } from '$lib/types/access';
 
 export const load = (async ({ params }) => {
 	const client = new CovalentClient(COVALENT_API_KEY);
-	//const resp = await client.BalanceService.getTokenBalancesForWalletAddress(Chains.AVALANCHE_TESTNET, params.name);
-	// resp.data.items.map((i) => console.dir(i))
 
 	const { data: activeChains } = await client.BaseService.getAddressActivity(params.name, {
 		testnets: true
@@ -25,8 +23,6 @@ export const load = (async ({ params }) => {
 		.filter('author_address', 'eq', params.name)
 		.limit(1)
 		.single();
-	console.log(new Date(firstPublished.data?.publication_date));
-	//client.NftService.checkOwnershipInNft(Chains.AVALANCHE_TESTNET)
 
 	const summit = getContract({
 		abi: abi,
@@ -37,7 +33,9 @@ export const load = (async ({ params }) => {
 		})
 	});
 
-	const accessStatus : AccessStatus = await summit.read.accessStatusTracker([params.name as `0x${string}`]);
+	const accessStatus: AccessStatus = await summit.read.accessStatusTracker([
+		params.name as `0x${string}`
+	]);
 	const publishCount = await summit.read.idTracker([params.name as `0x${string}`]);
 	return {
 		activeChains: activeChains.items.map((a) => {
@@ -49,7 +47,9 @@ export const load = (async ({ params }) => {
 			};
 		}),
 		publishCount: publishCount.toString(),
-		firstPublished: firstPublished.data?.publication_date ? new Date(firstPublished.data?.publication_date) : null,
+		firstPublished: firstPublished.data?.publication_date
+			? new Date(firstPublished.data?.publication_date)
+			: null,
 		accessStatus
 	};
 }) satisfies PageServerLoad;

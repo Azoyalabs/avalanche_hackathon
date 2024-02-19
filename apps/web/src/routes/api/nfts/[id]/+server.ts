@@ -7,10 +7,17 @@ const IN_APP_URL = (protocol: string, host: string, id: number | string) =>
 	`${protocol}//${host}/articles/${id}`;
 
 export const GET: RequestHandler = async ({ params, url }) => {
-	const { data, error: err } = await supabase.from('article').select('*').limit(1).single();
-	// NOTE: most metadata stuff is explained on opensea -> https://docs.opensea.io/docs/metadata-standards
-	console.error(err);
+	const { data, error: err } = await supabase
+		.from('article')
+		.select('*')
+		.filter('id', 'eq', params.id)
+		.limit(1)
+		.single();
 
+	if (err) {
+		error(404, "This article doesn't exist");
+	}
+	// NOTE: most metadata stuff is explained on opensea -> https://docs.opensea.io/docs/metadata-standards
 	if (data) {
 		const external_url = IN_APP_URL(url.protocol, url.host, params.id);
 		const nft = {
@@ -35,7 +42,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
 					value: `${data.full_body!.substring(0, 140)}...`
 				},
 				{
-					trait_type: "Header",
+					trait_type: 'Header',
 					value: data.header_image
 				}
 			]

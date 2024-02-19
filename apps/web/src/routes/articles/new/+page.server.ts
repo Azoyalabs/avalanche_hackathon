@@ -7,6 +7,9 @@ import { AccessStatus } from '$lib/types/access';
 import { superValidate } from 'sveltekit-superforms/server';
 import { publishSchema } from '$lib/schemas/PublishSchema';
 import { supabase } from '$lib/supabase.js';
+import { createTokenId, parseTokenId } from 'summit-utils';
+import { fail } from '@sveltejs/kit';
+import { uploadFile } from '$lib/ipfs.js';
 
 export const load = (async ({ locals }) => {
 	const summitContract = getContract({
@@ -31,13 +34,19 @@ export const load = (async ({ locals }) => {
 
 export const actions = {
 	default: async (event) => {
-		/*
-		const formData = await request.formData();
-		console.dir(formData);
-		*/
+		const formData = await event.request.formData();
+		const image = formData.get('image') as File;
+
 		const author = event.locals.userAddress as `0x${string}`;
-		const form = await superValidate(event, publishSchema);
+		const form = await superValidate(formData, publishSchema);
 		// TODO: send everything needed for creation
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		const uploaded = await uploadFile(image);
+
 
 		/*
 		const account = mnemonicToAccount(WHITELISTER_PASSPHARE);
@@ -68,23 +77,28 @@ export const actions = {
 
 		const articleID = await summitContract.read.idTracker([author]);
 
-		// TODO: store header somewhere
-		form.data.image as File;
-		const headerURL = '';
+		const tokenID = createTokenId(author, articleID, !form.data.free);
+
+		/*
+		return {
+			form,
+			tokenID
+		};*/
+		//const headerURL = '';
 
 		const inserted = await supabase.from('article').insert({
-			id: articleID.toString(),
+			id: tokenID.toString(),
 			author_address: author,
 			full_body: form.data.content,
-			header_image: headerURL,
-			description: '',
+			header_image: uploaded.fastUrl,
+			description: form.data.description,
 			publication_date: new Date().toUTCString(),
 			title: form.data.title,
 			tag: 'unknown'
 		});
 		return {
 			form,
-			articleID
+			tokenID
 		};
 	}
 };

@@ -106,7 +106,7 @@ export const load = (async ({ fetch, params, locals }) => {
 
 	return {
 		article: {
-			title: articleNFT.name,
+			title: article.data.title,
 			author: {
 				name: authorName,
 				address: article.data!.author_address,
