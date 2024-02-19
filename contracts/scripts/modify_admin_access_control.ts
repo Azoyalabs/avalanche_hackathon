@@ -2,11 +2,15 @@ import { createWalletClient, createPublicClient, http } from "viem";
 
 import { avalancheFuji } from 'viem/chains'
 import { mnemonicToAccount } from 'viem/accounts'
-import { SUMMIT_ADDRESS, FUNCTION_CONSUMER } from "./constants";
+//import { SUMMIT_ADDRESS, FUNCTION_CONSUMER } from "./constants";
+import { DEV_SUMMIT_ADDRESS, DEV_FUNCTION_CONSUMER } from "./constants";
+
+const SUMMIT_ADDRESS = DEV_SUMMIT_ADDRESS;
+const FUNCTION_CONSUMER = DEV_FUNCTION_CONSUMER;
+
 import { summitAbi } from "../generated/contractAbis";
 
 import * as viem from "viem";
-import { exit } from "process";
 
 require('dotenv').config()
 

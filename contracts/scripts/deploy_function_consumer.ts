@@ -15,8 +15,8 @@ require('dotenv').config()
 import { FUNCTION_CONSUMER_DATA } from "./contracts_loader";
 
 
-import { CCIP_TESTNET_CONTRACTS_INFO, SUMMIT_ADDRESS } from "./constants";
-
+import { CCIP_TESTNET_CONTRACTS_INFO, DEV_SUMMIT_ADDRESS } from "./constants";
+const SUMMIT_ADDRESS = DEV_SUMMIT_ADDRESS;
 
 const FUNCTION_ROUTER_ADDRESS = "0xA9d587a00A31A52Ed70D6026794a8FC5E2F5dCb0";
 

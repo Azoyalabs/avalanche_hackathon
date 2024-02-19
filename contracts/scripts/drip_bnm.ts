@@ -19,7 +19,8 @@ import * as viem from "viem";
 
 
 async function main() {
-    const account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
+    //const account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
+    const account = mnemonicToAccount(process.env.USER_PASSPHRASE!!)
     console.log(account.address)
 
     const publicClient = createPublicClient({

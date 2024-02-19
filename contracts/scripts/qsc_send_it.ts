@@ -28,7 +28,9 @@ import { functionConsumerAbi } from "../generated/contractAbis";
 import * as viem from "viem";
 import * as ethers from "ethers";
 
-import {FUNCTION_CONSUMER} from "./constants";
+//import {FUNCTION_CONSUMER} from "./constants";
+import {DEV_FUNCTION_CONSUMER} from "./constants";
+const FUNCTION_CONSUMER = DEV_FUNCTION_CONSUMER;
 
 //const FUNCTION_CONSUMER = "0x921F0F46Dc220d577377EE97e2bB2b9b7e60BA53" as `0x{string}`;
 

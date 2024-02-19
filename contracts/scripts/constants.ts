@@ -11,10 +11,12 @@ export const RECEIVER_ADDRESS = "0xd3d7cd1107fe49720eb6acfd0c7c33d8a26f467f"
 
 export const SUMMIT_ADDRESS = "0x3dc7bdf76ed0df86c15978c89ee1ea13c692af88"; //"0xb02dd60b0d337ddd6f99c98eae0292a51f514292"
 export const RECEIVER_ADDRESS = "0x7c74fcc86d7e9b5173cb983f6ca4a7189dfb24d2"; //"0x6c55574d10045b5da20e87709d7a24f24c943aec"
-
-
 export const FUNCTION_CONSUMER = "0xf7f13365d652b33208a4c952ebb05c38f1044abd"; //"0xbcd130666450729986437b8db38733d11345e7f2";
 
+
+export const DEV_SUMMIT_ADDRESS = "0xbcad44f527b611b72c7290076eb1d755ef8d5046";
+export const DEV_RECEIVER_ADDRESS = "0xee22728c76919dc1334b67c2642a0c94a0a8ad62";
+export const DEV_FUNCTION_CONSUMER = "0x6cc6140e73f66a3d6f6eafe73a60a6d4a7379b0b";
 
 /// Taken from: https://docs.chain.link/ccip/supported-networks/v1_2_0/testnet
 export const CCIP_TESTNET_CONTRACTS_INFO = {

@@ -12,6 +12,8 @@ require('dotenv').config()
 
 async function main() {
     const account = mnemonicToAccount(process.env.ADMIN_PASSPHRASE!!)
+    //const account = mnemonicToAccount(process.env.USER_PASSPHRASE!!)
+
 
     const wallet = createWalletClient(
         {

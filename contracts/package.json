@@ -13,7 +13,9 @@
     "update:uri": "esrun scripts/update_uri.ts",
     "chainlink:scam_check": "esrun scripts/qsc_send_it.ts",
     "deploy:consumer": "esrun scripts/deploy_function_consumer.ts",
-    "admin:set-access": "esrun scripts/admin_set_access_status.ts"
+    "admin:set-access": "esrun scripts/admin_set_access_status.ts",
+    "funds:withdraw": "esrun scripts/user_funds_withdrawal.ts",
+    "mint:crosschain": "esrun scripts/mint_reader_crosschain.ts"
   },
   "description": "",
   "main": "index.js",

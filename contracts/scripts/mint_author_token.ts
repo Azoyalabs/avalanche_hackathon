@@ -8,7 +8,11 @@ import { mnemonicToAccount } from 'viem/accounts'
 require('dotenv').config()
 
 
-import { SUMMIT_ADDRESS, RECEIVER_ADDRESS, CCIP_TESTNET_CONTRACTS_INFO } from "./constants";
+//import { SUMMIT_ADDRESS, RECEIVER_ADDRESS, CCIP_TESTNET_CONTRACTS_INFO } from "./constants";
+import { DEV_SUMMIT_ADDRESS, DEV_RECEIVER_ADDRESS, CCIP_TESTNET_CONTRACTS_INFO } from "./constants";
+const SUMMIT_ADDRESS = DEV_SUMMIT_ADDRESS
+const RECEIVER_ADDRESS = DEV_RECEIVER_ADDRESS;
+
 import { stringToAddress } from "./utils";
 
 import * as viem from "viem";
@@ -42,7 +46,7 @@ async function main() {
     })
 
     let tokenId = await summitContract.read.createTokenId(
-        [account.address, BigInt(0), false]   
+        [account.address, BigInt(0), true]   
     );
 
 

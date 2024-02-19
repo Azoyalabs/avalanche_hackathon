@@ -22,8 +22,7 @@ async function main() {
 
     const user_account = mnemonicToAccount(process.env.USER_PASSPHRASE!!, {
         //changeIndex: 1
-    })
-    
+    })    
 
     const wallet = createWalletClient(
         {
@@ -48,11 +47,14 @@ async function main() {
 
     // use write account here instead of admin 
     let tokenId = await summitContract.read.createTokenId(
-        [admin_account.address, BigInt(1), false]   
+        [admin_account.address, BigInt(0), false]   
     );
+
+    console.log(tokenId)
+    return
         
     // get mint price if it's a paid article 
-    let _mint_price = await summitContract.read.mintPrice();
+    let mint_price = await summitContract.read.mintPrice();
 
     const bnmContract = viem.getContract({
         abi: bnMTokenAbi, //SUMMIT_ABI, //SUMMIT_DATA.abi,
@@ -64,7 +66,7 @@ async function main() {
     let res = await bnmContract.write.transferAndCall(
         [
             RECEIVER_ADDRESS,
-            BigInt(0),
+            mint_price, //BigInt(0),
             viem.bytesToHex(viem.toBytes(tokenId))   
             //toHex(tokenId)         
         ],
