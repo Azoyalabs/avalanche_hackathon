@@ -67,7 +67,7 @@ export const load = (async ({ params, fetch }) => {
 		publishedArticles: publishedArticles!.map((a) => ({
 			...a,
 			full_body: '',
-			description: `${a.full_body!.substring(0, 140)}...`
+			description: a.description,
 		})),
 		ownedArticles: backedArticles,
 		userName,
