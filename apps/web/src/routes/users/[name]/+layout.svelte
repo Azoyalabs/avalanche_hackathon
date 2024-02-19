@@ -17,8 +17,6 @@
 		return `/users/${$page.params.name}/${link}`;
 	};
 
-	// TODO: handle has domain
-	const domain = {};
 	const userStore = getUserStoreState();
 	$: isCurrentUser = derived(userStore.address, ($address) => {
 		return $address === $page.params.name;
@@ -29,16 +27,26 @@
 	<section class="pt-12 space-y-6">
 		<div class="flex flex-col items-center">
 			<div class="w-20 overflow-hidden rounded-lg">
-				<AvatarGenerator
-					props={{
-						name: data.userName || $page.params.name,
-						colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
-						square: true
-					}}
-				></AvatarGenerator>
+				{#if data.userAvatar}
+					<img src={data.userAvatar} alt="" />
+				{:else}
+					<AvatarGenerator
+						props={{
+							name: data.userName || $page.params.name,
+							colors: ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
+							square: true
+						}}
+					></AvatarGenerator>
+				{/if}
 			</div>
-			<h1 class="mt-2 text-2xl font-bold">
-				{data.userName ?? $page.params.name}
+			<h1 class="mt-2 text-lg font-bold lg:text-2xl">
+				{#if data.userName}
+					{data.userName}
+				{:else}
+					{$page.params.name.substring(0, 8)}...{$page.params.name.substring(
+						$page.params.name.length - 8
+					)}
+				{/if}
 			</h1>
 			{#if data.userName}
 				<div class="mt-1 text-sm text-muted-foreground">
@@ -50,7 +58,7 @@
 					<h3 class="font-medium text-white">Customize your profile using Avvyy</h3>
 
 					<div class="flex items-center justify-between">
-						Avvvyy is the leading avalanche name service <Button href="" variant="ghost"
+						Avvvyy is the leading avalanche name service <Button href="https://avvy.domains/" target="_blank" variant="ghost"
 							>Get your own domain</Button
 						>
 					</div>
@@ -95,7 +103,7 @@
 		</div>
 	</section>
 
-	{#if $currentLink !== LayoutLink.Profile}
+	{#if !$isCurrentUser}
 		<SubscriptionCard name={$page.params.name}></SubscriptionCard>
 	{/if}
 	<section>

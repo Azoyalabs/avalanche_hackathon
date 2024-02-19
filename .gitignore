@@ -16,3 +16,5 @@ vite.config.js.timestamp-*
 .test-tmp
 symlink-from
 .idea/
+
+contracts/node_modules

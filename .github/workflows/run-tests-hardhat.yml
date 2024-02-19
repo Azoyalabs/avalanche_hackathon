@@ -1,0 +1,36 @@
+name: Hardhat Test
+run-name: Running Hardhat tests
+on:
+  push:
+    branches: 
+      - "contracts"
+      - "contracts_router"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm install -g pnpm@8.6.2
+          pnpm install
+
+      - name: Build utils
+        working-directory: ./packages/utils
+        run: |
+          npm run build
+          npm run buildcjs
+
+      - name: Run Hardhat tests
+        working-directory: ./contracts
+        run: |
+          pnpm install --save-dev hardhat && npx hardhat test

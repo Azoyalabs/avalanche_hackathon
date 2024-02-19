@@ -1,11 +1,44 @@
-import type {  ExpectedResponse } from '../../api/nfts/[id]/+server';
+import { supabase } from '$lib/supabase';
+import { error } from '@sveltejs/kit';
+import type { ExpectedResponse } from '../../api/nfts/[id]/+server';
 import type { PageServerLoad } from './$types';
+import { getContract, createClient, http } from 'viem';
+import { avalanche, avalancheFuji } from 'viem/chains';
+import { abi as AvyyyABI } from '$lib/contracts/nameService/abi';
+import { abi as SummitABI } from '$lib/contracts/summit';
 
+import { parseTokenId } from 'summit-utils';
+import { COVALENT_API_KEY } from '$env/static/private';
+import { CovalentClient, Chains } from '@covalenthq/client-sdk';
+import { NAME_SERVICE_ADDRESS, SUMMIT_ADDRESS } from '$lib/constants';
 
 export const load = (async ({ fetch, params, locals }) => {
+	// ------- SETUP ---------
+	const avvyyClient = getContract({
+		address: NAME_SERVICE_ADDRESS,
+		abi: AvyyyABI,
+		client: createClient({
+			transport: http(),
+			chain: avalanche
+		})
+	});
+
 	const id = params.id;
-	// TODO: compute if NFT requires payment
+
 	const { userAddress } = locals;
+
+	const article = await supabase
+		.from('article')
+		.select('*')
+		.filter('id', 'eq', params.id)
+		.limit(1)
+		.single();
+
+	if (!article.data) {
+		error(404, "This article doesn't exist");
+	}
+
+	// TODO: compute if NFT requires payment
 
 	// TODO: compute access
 	/**
@@ -13,109 +46,76 @@ export const load = (async ({ fetch, params, locals }) => {
 	 * If paid -> | User has paid for it -> has access
 	 * 			  | User hasn't paid for it -> no access, should be able to prompt for payment
 	 */
-	const hasAccess = true;
+	const parsedToken = parseTokenId(BigInt(id));
+	const isPaidArticle = parsedToken.isPaying;
 
-	const nft = (await (await fetch(`/api/nfts/${id}`)).json()) as ExpectedResponse;
-	nft.attributes;
+	// TODO: make sure this is ok
+	let hasAccess = !isPaidArticle && userAddress !== undefined;
 
-	// TODO: get supporters
-	const minterAvatars = new Array(4).fill(
-		'https://images.mirror-media.xyz/publication-images/N-MMkKx65X408ZIdF99M8.png?height=592&width=592'
-	) as string[];
+	const summitClient = getContract({
+		address: SUMMIT_ADDRESS,
+		abi: SummitABI,
+		client: createClient({
+			transport: http(),
+			chain: avalancheFuji
+		})
+	});
 
-	// TODO: This should be coming from our backend
-	/**
-	 * If user has access -> markdown
-	 * else -> preview
-	 */
-	const markdown = `
+	// TODO: do we want a "has backed" field?
+	if (userAddress) {
+		/*
+		NOTE: UNAVAILABLE ON TESTNET
+		const covalentClient = new CovalentClient(COVALENT_API_KEY);
 
-## In cornu magnorum cursu cornua desilit et
+		
+		const ownership = await covalentClient.NftService.checkOwnershipInNftForSpecificTokenId(
+			Chains.AVALANCHE_TESTNET,
+			userAddress,
+			SUMMIT_ADDRESS,
+			params.id
+		);
+		*/
 
-Lorem markdownum nulla, observata quod; modo ante viscera: lammina! Est summe
-flectunt sternitur anticipata nata peperisse mecum fortes **et lateri nubila**.
-Iam casu pigra tibi occiderat munera cornu lacerti summae ter: quasque
-**neque**. Vellera ostendunt ab tamen tenet et adest: iubet humi pete!
+		const userBalance = await summitClient.read.balanceOf([
+			userAddress! as `0x${string}`,
+			BigInt(params.id)
+		]);
+		if (userBalance > BigInt(0)) {
+			hasAccess = true;
+		}
+	}
 
-> Precor **blandisque malas lora**, sit hoc tibi festisque coniunx pisces ne
-> natarum seque incidere erat, tremulasque ambierantque. Quid removere aditus.
-> [Revulsum](http://molpea.org/dixitomnes.html) et quem notas flumina: cum fac
-> me frondibus sortes, simul celeberrima.
+	// TODO: Do we need this? all the info should be coming from our backend
+	const articleNFT = (await (await fetch(`/api/nfts/${id}`)).json()) as ExpectedResponse;
 
-Inquit obsceno dixit, ereptus corpora. *A sed* est lapidosos ut puppis sororem
-probro, ad incipit liquido. Occupat fratres condita locis Cephenum iunxit, [ego
-fecit huc](http://cum.net/amata-cognoscere.aspx) mediis in nos *functus*.
-Circumstant equos mergit sua exhausta et visa ad venitis tantum instrumenta
-cura; Latoius?
+	const content = hasAccess ? article.data!.full_body : article.data?.full_body!.substring(200);
 
-## Non natura in
+	// ------- AUTHOR INFO ---------
+	let authorName: string | null = await avvyyClient.read.reverseResolveEVMToName([
+		article.data!.author_address as `0x${string}`
+	]);
+	authorName = authorName === '' ? null : authorName;
 
-Atque supremo animata Telamon. Huic mente evellere auguris mihi erunt. Me suis
-defensore, non regemque dixit, prima vocatum locis, ab **vero Echione**. In
-quoque, ut Olympi deficeret, graminis manumque deserti coniuge ventis.
-
-> Iacet potest. Sola saepe urbem relinquunt quater. Nostra inque sequentem
-> tinnitibus piscator, ense nympha remittis ait petii sunt pectore dis ausis.
-> Quae ille et si Nestora saligno! Non fata decem parvasque: non citra Euboicam
-> vigilat in.
-
-Dux raucos et terra pennatis divae fessas illum supplex, et populo quod laetaris
-umero aut murmure. Diversa aura illa locique! Casside Romulus, dum non ita
-fratres malorum **Achilles** via, *tali hastam*. Parcere sumpsisse pudore,
-terras ausis dabis capillis aera, venimus dum tunc?
-
-## Terra inpulsu mea inpono utque
-
-Et *Idaeo quoque*. Mediis donec, in et lingua. His mater, sedet nubila una
-pepulere leges. Meis cum praedaeque **venerantur deos**, aequor terres aliis, et
-Graias, inmanis: illa nomen duasque! Cadentum subito suas ante [tum
-ramis](http://www.oris-est.io/spissisque) relicta a inquit dixisse, in **Iovis
-una par** tendebat hastile.
-
-    if (subnetClass(thin.ribbon_service(2 + portDv, -2, unc +
-            web_scrolling_page))) {
-        monochrome_lan = bookmark.internetBarPoint(
-                error_protector_supercomputer, bufferNewline * flash);
-        sram_macro(compactSnow);
-    }
-    export += 2 - cisc_delete - 4;
-    var ideDriveZone = 4;
-    var scrolling = 26;
-    if (coreSystemBloatware * web + rawGoogleCopyright - database) {
-        unit_access(digital.text(samba), search_snippet_tiff, fiosPort);
-        boxScarewarePrinter(systemClient, impact);
-        mamp += facebook_sata + android_tablet_interpreter.hdmiSpool(appletT, 3,
-                serverSerp);
-    }
-
-Hunc dumque corpora. Tela flexere: ulla nabat nec magno gaudens pondera quae
-temporis. Et primos incompta stramine parvos femineos *imagine Austri et* aderas
-ex sinunt potest placet? Est danda, matri adrectisque rebus dixerat patresque
-frigore, nec. Tinguamus nec, fera sit distentae moenia undas, ipse pedum
-nequiquam arboris prope deam.`;
-
-	// TODO: This should be coming from our backend
-	const banner =
-		'https://images.mirror-media.xyz/publication-images/yClkyV3zTvmXOt1cvcksN.png?height=596&amp;width=1192';
-
-	// TODO: the author info should be coming from avvyy when possible
-	const authorAvatar =
-		'https://images.mirror-media.xyz/publication-images/sPyyAY1axpIFmxpI-BhwB.png?height=600&width=600';
-	const authorName = 'abc';
+	let authorAvatar: string | null = null;
+	if (authorName) {
+		const readAvatarResponse = await avvyyClient.read.resolveStandard([authorName, BigInt(7)]);
+		if (readAvatarResponse !== '') {
+			authorAvatar = readAvatarResponse;
+		}
+	}
 
 	return {
 		article: {
-			title: nft.name,
+			title: article.data.title,
 			author: {
 				name: authorName,
+				address: article.data!.author_address,
 				avatar: authorAvatar
 			},
-			content: markdown,
-			banner: banner,
-			minters: minterAvatars.map((a) => ({
-				avatar: a,
-				name: 'minter name'
-			}))
+			content: content,
+			access: hasAccess,
+			banner: article.data?.header_image,
+			isPaid: isPaidArticle
 		}
 	};
 }) satisfies PageServerLoad;

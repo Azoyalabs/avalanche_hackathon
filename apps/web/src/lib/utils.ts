@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { cubicOut } from 'svelte/easing';
 import type { TransitionConfig } from 'svelte/transition';
+import { toast } from 'svelte-sonner';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -59,7 +60,6 @@ export function delay(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-
 export type PreviewAttribute = {
 	trait_type: 'Preview';
 	value: string;
@@ -72,11 +72,13 @@ export type PublishedAttribute = {
 	trait_type: 'Published';
 	value: number;
 	display_type: 'date';
-}
-export type Attribute =
-	| AuthorAttribute
-	| PublishedAttribute
-	| PreviewAttribute
+};
+
+export type HeaderAttribute = {
+	trait_type: 'Header';
+	value: string;
+};
+export type Attribute = AuthorAttribute | PublishedAttribute | PreviewAttribute | HeaderAttribute;
 export type TraitTypes = Attribute['trait_type'];
 
 export function getRelevantAttribute<T extends { trait_type: TraitTypes; value: string | number }>(
@@ -84,6 +86,27 @@ export function getRelevantAttribute<T extends { trait_type: TraitTypes; value: 
 	attributes: Attribute[]
 ): T {
 	const attribute = attributes.find((a) => a.trait_type === key)!;
-	console.log('attribute: %j', attribute);
 	return attribute as unknown as T;
+}
+
+const erc20Formatter = Intl.NumberFormat(undefined, {
+	minimumFractionDigits: 2,
+	maximumFractionDigits: 2
+});
+
+export function formatERC20(amount: bigint, decimals: number, symbol: string) {
+	return `${erc20Formatter.format(Number(amount) * Math.pow(10, -decimals))} ${symbol}`;
+}
+
+export function transactionToaster(promise: Promise<string>) {
+	return toast.promise<Awaited<typeof promise>>(promise, {
+		loading: 'Sending Transaction...',
+		success: (hash) => {
+			return 'Transaction successful! \n' + hash;
+		},
+		error: (err) => {
+			console.error(err);
+			return `Error: ${err}`;
+		}
+	});
 }

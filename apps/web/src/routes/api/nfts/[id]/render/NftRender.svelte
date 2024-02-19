@@ -1,27 +1,20 @@
 <script lang="ts">
+	import { MountainSnow } from 'lucide-svelte';
 	import '../../../../../app.pcss';
-	export let src = "https://images.mirror-media.xyz/publication-images/VSOhY7aTvRRVzBALIeyjV.jpeg";
+	export let image: string;
 	export let title: string;
+
+	export let author: string;
 </script>
 
-<div class="flex h-full bg-black dark">
-	<div class="flex w-full h-full">
-		<div class="flex flex-col items-center justify-center w-full h-full">
-			<img
-				alt="Nft"
-				{src}
-				class="object-scale-down w-full h-full"
-			/>
-			<!-- src="https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png" -->
-			<!-- 
-			<div
-				class="flex w-full bg-center bg-cover aspect-video"
-				style="background: url('https://mirror.xyz/_next/image?url=https%3A%2F%2Fimages.mirror-media.xyz%2Fpublication-images%2FVSOhY7aTvRRVzBALIeyjV.jpeg%3Fheight%3D540%26width%3D1080&w=640&q=75');"
-			></div>
-			 -->
+<!-- 
+<div class="flex h-full overflow-hidden bg-black">
+	<div class="flex flex-col w-full h-full p-8">
+		<div class="flex w-24 h-24">
+			<img alt="Nft" {src} class="object-cover w-full h-full" />
 		</div>
 
-		<div class="absolute left-[33.33%] flex h-full w-2/3 flex-col bg-black text-white">
+		<div class="flex flex-col w-2/3 h-full text-white bg-black">
 			<div class="flex flex-col px-4">
 				<h1 class="text-3xl font-bold leading-tight text-pretty">
 					{title}
@@ -32,4 +25,26 @@
 			</div>
 		</div>
 	</div>
+</div>
+ -->
+<div class="flex items-stretch h-full text-white bg-stone-900">
+	<div class="flex flex-col justify-between w-2/5 p-6">
+		<div class="flex flex-col">
+			<div class="flex text-pretty text-2xl font-bold leading-[1.10]">
+				{title}
+			</div>
+
+			<div class="flex mt-6 font-normal break-all whitespace-nowrap">{author}</div>
+		</div>
+
+		<div class="flex flex-col">
+			<MountainSnow class="w-8 h-8" />
+			<div class="flex mt-1">Summit</div>
+		</div>
+	</div>
+
+	<div class="flex flex-col items-center justify-center w-3/5 h-full">
+		<img src={image} class=" h-fit w-[400px]" width="400" height="600" />
+	</div>
+	<!-- <img {src} class="w-3/5 h-full" /> -->
 </div>

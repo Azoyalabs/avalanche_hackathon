@@ -1,97 +1,94 @@
 <script lang="ts">
+	import { page } from '$app/stores';
+	import { BnM_TOKEN_ADDRESS, SUMMIT_ADDRESS, SUMMIT_RECEIVER_ADDRESS } from '$lib/constants.js';
+	import { AccessStatus } from '$lib/types/access';
+	import PublishForm from '$lib/ui/app/PublishForm/PublishForm.svelte';
 	import { Button } from '$lib/ui/shadcn/ui/button';
-	import { Input } from '$lib/ui/shadcn/ui/input';
-	import { Label } from '$lib/ui/shadcn/ui/label';
+	import { toast } from 'svelte-sonner';
+	import { createWalletClient, custom, getContract, bytesToHex, toBytes } from 'viem';
+	import { avalancheFuji } from 'viem/chains';
+	import type { ActionData } from './$types.js';
+	import { abi as SummitABI } from '$lib/contracts/summit/abi.js';
+	import { getUserStoreState } from '$lib/state';
+	import { abi as BnMABI } from '$lib/contracts/ERC20/abi.js';
+	import { transactionToaster } from '$lib/utils.js';
+	import { goto } from '$app/navigation';
 
-	import 'easymde/dist/easymde.min.css';
-	import { Notebook, Upload } from 'lucide-svelte';
-	import { onMount } from 'svelte';
-	const id = crypto.randomUUID();
+	export let data;
 
-	onMount(() => {
-		return;
-		async function initEasyMDE() {
-			const EasyMDE = (await import('easymde')).default;
-			const easyMDE = new EasyMDE({ element: document.getElementById(id)!, minHeight: '400px' });
+	$: summitClient = (() => {})();
 
-			return () => easyMDE.cleanup();
-		}
+	export let form: ActionData;
+	const { provider, address: userAddress } = getUserStoreState();
+	// TODO: we need to react to the form and it's articleID in order to prompt the actual tx
+	// Since we have the article ID, we can redirect on success without an issue
 
-		const cleanup = initEasyMDE();
+	const mintNFT = async (id: bigint) => {
+		const walletClient = createWalletClient({
+			chain: avalancheFuji,
+			//chain: bscTestnet,
+			transport: custom($provider!)
+		});
 
-		//return () => easyMDE.cleanup();
-		return cleanup;
-	});
+		const summitContract = getContract({
+			address: SUMMIT_ADDRESS,
+			abi: SummitABI,
+			client: walletClient
+		});
 
-	export let contractFileList: FileList | null = null;
+		const bnmContract = getContract({
+			address: BnM_TOKEN_ADDRESS,
+			abi: BnMABI,
+			client: walletClient
+		});
 
-	$: contractFile = contractFileList ? contractFileList.item(0) : null;
+		let txPromise = bnmContract.write.transferAndCall(
+			[SUMMIT_RECEIVER_ADDRESS as `0x${string}`, BigInt(0), bytesToHex(toBytes(id))],
+			{
+				account: $userAddress! as `0x${string}`
+			}
+		);
 
-	$: fileName = contractFile?.name;
-	$: fileSize = contractFile?.size;
+		const toast = transactionToaster(txPromise);
+
+		await txPromise;
+
+		await goto(`/articles/${id.toString()}`);
+
+		/*
+		return toast.promise<Awaited<typeof txPromise>>(txPromise, {
+			loading: 'Sending Transaction...',
+			success: (hash) => {
+				return 'Transaction successful! \n' + hash;
+			},
+			error: (err) => {
+				console.error(err);
+				return `Error: ${err}`;
+			}
+		});*/
+	};
 </script>
 
-<div class="pt-12 space-y-6">
-	<div class="flex flex-col w-full gap-2">
-		<Label for="title">Title</Label>
-		<Input type="text" id="title" placeholder="Article Title" />
-		<p class="text-sm text-muted-foreground">Enter the title of your article.</p>
-	</div>
-
-	<div class="flex flex-col gap-2">
-		<Label for="dropzone-file">Header Image</Label>
-
-		<div class="flex items-center justify-center w-full">
-			<label
-				for="dropzone-file"
-				class="flex flex-col items-center justify-center w-full h-64 duration-200 rounded-lg cursor-pointer bg-muted hover:bg-muted-foreground/30 group"
-			>
-				<div class="flex flex-col items-center justify-center pt-5 pb-6">
-					{#if contractFile}
-						<Notebook size={30} class="text-muted-foreground group-hover:text-foreground" />
-					{:else}
-						<Upload size={30} class="text-muted-foreground group-hover:text-foreground" />
-					{/if}
-					{#if contractFile}
-						<p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-							<span class="font-semibold">{fileName}</span>
-						</p>
-						<p class="text-sm text-neutral-500 dark:text-neutral-400">
-							{((fileSize ?? 0) / 1000).toFixed(0)} kB
-						</p>
-					{:else}
-						<p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-							<span class="font-semibold">{'Click to upload'}</span>
-						</p>
-						<p class="text-sm text-neutral-500 dark:text-neutral-400">
-							{'your file'}
-						</p>
-					{/if}
-				</div>
-				<input
-					id="dropzone-file"
-					type="file"
-					accept=".png,.jpg,.jpeg"
-					class="hidden"
-					bind:files={contractFileList}
-				/>
-			</label>
+{#if form && form?.tokenID}
+	<div class="flex flex-col items-center justify-center p-8 mt-6 border rounded-lg shadow min-h-20">
+		<div class="text-sm">
+			<!-- {form?.tokenID} -->
+			Everything's set up!
 		</div>
+		<Button
+			class="mt-2"
+			on:click={() => {
+				mintNFT(form.tokenID);
+			}}>Mint your token</Button
+		>
 	</div>
+{:else if data.access === AccessStatus.Unknown}
+	<!-- TODO: user needs to connect and request approval.  -->
 
-	<div class="flex flex-col w-full gap-2">
-		<Label for={id}>Content</Label>
-
-		<textarea {id} class="border border-red-500 font-nunito"></textarea>
-	</div>
-
-	<div class="flex flex-col w-full max-w-sm gap-2">
-		<Label for={id}>Price</Label>
-
-		<div>je sais pas trop comment faire là gratuit / pas gratuit / prix</div>
-	</div>
-
-	<div>
-		<Button>Publish</Button>
-	</div>
-</div>
+	<div>Request access to write</div>
+{:else if data.access === AccessStatus.Banned}
+	<!-- TODO: redesign  -->
+	<div>You're banned</div>
+{:else}
+	<PublishForm form={data.form}></PublishForm>
+{/if}

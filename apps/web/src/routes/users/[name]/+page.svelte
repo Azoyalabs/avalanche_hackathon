@@ -1,52 +1,36 @@
 <script lang="ts">
-	import type { Article } from '$lib/models/article';
+	import { page } from '$app/stores';
 	import ArticleCard from '$lib/ui/app/ArticleCard.svelte';
 	import { getRelevantAttribute } from '$lib/utils';
 	import { LayoutLink, setLayoutContext } from './context';
 
-	// TODO: remove faker
 	export let data;
-	const articles: Omit<Article, 'content'>[] = [
-		{
-			title: 'Article title',
-			publishDate: new Date(),
-			preview: 'article preview',
-			author: {
-				name: 'Author name',
-				address: '0xthingy...split',
-				avatar: 'https://miro.medium.com/v2/resize:fill:24:24/1*OkvxzWk0qB6UnnGRo-aDAQ.png'
-			}
-		}
-	];
 
 	setLayoutContext(LayoutLink.Published);
 
-	$: preppedArticles = data.ownedArticles.map((a) => {
+	const IN_APP_URL = (protocol: string, host: string, id: number | string) =>
+		`${protocol}//${host}/articles/${id}`;
+
+	$: preppedArticles = data.publishedArticles.map((a) => {
 		return {
-			title: a.name,
-			publishDate: new Date(
-				getRelevantAttribute<{ trait_type: 'Published'; value: number }>(
-					'Published',
-					a.attributes
-				).value
-			),
-			preview: getRelevantAttribute<{ trait_type: 'Preview'; value: string }>(
-				'Preview',
-				a.attributes
-			).value,
+			title: a.title!,
+			publishDate: new Date(a.publication_date!),
+			preview: a.full_body,
+			description: a.description,
+			banner: a.header_image,
 			author: {
-				name: getRelevantAttribute<{ trait_type: 'Author'; value: string }>('Author', a.attributes)
-					.value,
-				address: '0xthingy...split',
+				name: a.author_address,
+				address: a.author_address,
 				avatar: 'https://miro.medium.com/v2/resize:fill:24:24/1*OkvxzWk0qB6UnnGRo-aDAQ.png'
-			}
+			},
+			url: IN_APP_URL($page.url.protocol, $page.url.host, a.id)
 		};
 	});
 </script>
 
-<section class="gap-6 mt-6">
+<section class="mt-6">
 	{#if preppedArticles.length > 0}
-		<div class="grid md:grid-cols-2 xl:grid-cols-3">
+		<div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
 			{#each preppedArticles as article, i}
 				<ArticleCard {article}></ArticleCard>
 			{/each}
