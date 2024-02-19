@@ -39,30 +39,12 @@ export const actions = {
 
 		const author = event.locals.userAddress as `0x${string}`;
 		const form = await superValidate(formData, publishSchema);
-		// TODO: send everything needed for creation
 
 		if (!form.valid) {
 			return fail(400, { form });
 		}
 
 		const uploaded = await uploadFile(image);
-
-		/*
-		const account = mnemonicToAccount(WHITELISTER_PASSPHARE);
-
-		const summitContract = getContract({
-			abi: SummitABI,
-			address: SUMMIT_ADDRESS,
-			client: createWalletClient({
-				transport: http(),
-				account,
-				chain: avalancheFuji
-			})
-		});
-
-		const id = await summitContract.read.idTracker([author]);
-		console.log(`expected id is ${id}`)
-*/
 
 		// Send back ID
 		const summitContract = getContract({
@@ -77,13 +59,6 @@ export const actions = {
 		const articleID = await summitContract.read.idTracker([author]);
 
 		const tokenID = createTokenId(author, articleID, !form.data.free);
-
-		/*
-		return {
-			form,
-			tokenID
-		};*/
-		//const headerURL = '';
 
 		const inserted = await supabase.from('article').insert({
 			id: tokenID.toString(),

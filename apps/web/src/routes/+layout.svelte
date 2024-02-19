@@ -20,7 +20,6 @@
 		AvalancheTestnet,
 		type Chain,
 		BNBChainTestnet,
-		EthereumGoerli
 	} from '@particle-network/chains';
 
 	import * as Drawer from '$lib/ui/shadcn/ui/drawer';
@@ -29,7 +28,7 @@
 	import * as Sheet from '$lib/ui/shadcn/ui/sheet';
 	import SheetBody from '$lib/ui/app/SheetBody/SheetBody.svelte';
 	import { setUserStoreState } from '$lib/state';
-	import { derived } from 'svelte/store';
+	import { derived, writable } from 'svelte/store';
 	import { APP_LINKS } from '$lib/links';
 	import Address from '$lib/ui/app/Address/Address.svelte';
 	import { delay } from '$lib/utils';
@@ -46,20 +45,23 @@
 		projectId: PUBLIC_PARTICLE_PROJECT_ID,
 		clientKey: PUBLIC_PARTICLE_CLIENT_KEY,
 		appId: PUBLIC_PARTICLE_APP_ID,
-		// FIXME: we're missing some testnets
-		chains: [AvalancheTestnet as Chain, BNBChainTestnet as Chain, EthereumGoerli as Chain]
+		// NOTE: we're only implementing BNB testnet
+		chains: [AvalancheTestnet as Chain, BNBChainTestnet as Chain]
 	};
 
 	const userStore = setUserStoreState(null);
 	$: address = derived(userStore.address, ($address) => $address);
 	$: BNM_BALANCE = userStore.balance;
 
+	const particle = new ParticleConnect(config);
+	
+	setContext("particle", particle);
+
 	async function connectToParticle() {
-		const particle = new ParticleConnect(config);
 		const provider = (await particle.connect()) as EVMProvider;
 		const store = await userStore.connect(provider);
 
-		// TODO: How do we switch network with particle? Looks like through particle is the answer
+		// NOTE: enforce avalanche
 		particle.switchChain(AvalancheTestnet);
 
 		// Wait for address query
@@ -203,8 +205,16 @@
 								></AvatarGenerator>
 							</div>
 							<div class="flex flex-col text-left">
-								<Drawer.Title>0x18979...absje6</Drawer.Title>
-								<Drawer.Description>View Profile</Drawer.Description>
+								<Drawer.Title><Address address={$address}></Address></Drawer.Title>
+								<Drawer.Description>
+									<Button
+										href={APP_LINKS.USER_PROFILE($address)}
+										variant="ghost"
+										size="sm"
+										class="px-0 py-0 leading-4 text-muted-foreground hover:bg-transparent"
+										>View Profile</Button
+									>
+								</Drawer.Description>
 							</div>
 						</Drawer.Header>
 						<SheetBody balance={$BNM_BALANCE}></SheetBody>

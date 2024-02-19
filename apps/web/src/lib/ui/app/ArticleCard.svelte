@@ -21,7 +21,7 @@
 >
 	<div class="@lg:flex h-full gap-2">
 		<img
-			src="{article.banner}"
+			src={article.banner}
 			alt={article.title}
 			class="@xl:h-60 @xl:w-52 @2xl:w-2/5 h-40 w-full object-cover"
 		/>
@@ -48,7 +48,7 @@
 						article.author.name.length - 8
 					)}
 				</span>
-<!-- 
+				<!-- 
 				<Avatar.Root class="border">
 					<Avatar.Image src={article.author.avatar} alt={article.author.name} />
 					<Avatar.Fallback

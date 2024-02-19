@@ -11,7 +11,6 @@ type UploadIPFSFileReturn = {
 	ipfsUrls: string[];
 };
 
-// FIXME: allow feeding in an object (blob?)
 export async function uploadFile(file: File): Promise<UploadIPFSFileReturn> {
 	const formData = new FormData();
 

@@ -20,7 +20,7 @@
 
 	export let form: ActionData;
 	const { provider, address: userAddress } = getUserStoreState();
-	// TODO: we need to react to the form and it's articleID in order to prompt the actual tx
+	// NOTE: we need to react to the form and it's articleID in order to prompt the actual tx
 	// Since we have the article ID, we can redirect on success without an issue
 
 	const mintNFT = async (id: bigint) => {
@@ -54,27 +54,21 @@
 		await txPromise;
 
 		await goto(`/articles/${id.toString()}`);
-
-		/*
-		return toast.promise<Awaited<typeof txPromise>>(txPromise, {
-			loading: 'Sending Transaction...',
-			success: (hash) => {
-				return 'Transaction successful! \n' + hash;
-			},
-			error: (err) => {
-				console.error(err);
-				return `Error: ${err}`;
-			}
-		});*/
 	};
+
+	const { isConnected } = getUserStoreState();
+
+	let verificationQuery: null | string = null;
+	async function requestVerification() {
+		const resp = await fetch('/api/auth/whitelist');
+		const json: { txHash: string } = await resp.json();
+		verificationQuery = json.txHash;
+	}
 </script>
 
 {#if form && form?.tokenID}
 	<div class="flex flex-col items-center justify-center p-8 mt-6 border rounded-lg shadow min-h-20">
-		<div class="text-sm">
-			<!-- {form?.tokenID} -->
-			Everything's set up!
-		</div>
+		<div class="text-sm">Everything's set up!</div>
 		<Button
 			class="mt-2"
 			on:click={() => {
@@ -83,12 +77,27 @@
 		>
 	</div>
 {:else if data.access === AccessStatus.Unknown}
-	<!-- TODO: user needs to connect and request approval.  -->
-
-	<div>Request access to write</div>
+	<div class="flex flex-col items-center justify-center p-6 mt-6 border rounded-lg">
+		{#if verificationQuery}
+			<div>Access requested. This may take up to a few minutes</div>
+			<Button
+				href="https://testnet.snowtrace.io/tx/{verificationQuery}?chainId=43113"
+				variant="outline"
+				class="mt-2">View Transaction</Button
+			>
+		{:else}
+			<div>Request access to write</div>
+			<Button
+				disabled={$isConnected === false}
+				class="mt-2"
+				on:click={() => {
+					requestVerification();
+				}}>Request verification</Button
+			>
+		{/if}
+	</div>
 {:else if data.access === AccessStatus.Banned}
-	<!-- TODO: redesign  -->
-	<div>You're banned</div>
+	<div class="p-6 mt-6 border rounded-lg">You're Banned.</div>
 {:else}
 	<PublishForm form={data.form}></PublishForm>
 {/if}
