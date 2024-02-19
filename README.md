@@ -15,7 +15,6 @@ The contract is currently live on the Fuji Testnet and verified on the explorer,
 Articles are also available as NFTs, tradable on OpenSea and other NFT marketplaces: [OpenSea]([https://testnets.opensea.io/fr/assets/avalanche-fuji/0x30cdaa09e7a763ca2521fe6a9710776bd7a746e6/6408127683748287498525528440796427317281100039138196694152555658537814982656](https://testnets.opensea.io/assets/avalanche-fuji/0x3dc7bdf76ed0df86c15978c89ee1ea13c692af88/86088461035141156114660501042217095135046502368911360769336884879478585556992
 ))
 
-
 ## Key features
 
 Summit is a complex project that boasts multiple features and enhancements intended to make it user-friendly, easy to interact with and prevent abuse.
@@ -35,6 +34,10 @@ Social platforms face a common challenge of addressing automated content generat
 - Integration with Avvy, the Avalanche Name Service    
 Social platforms also mean an opportunity to build a following and identity verification is a part of this process. Summit is integrated with Avvy, the Avalanche Name Service, thereby guaranteeing a single identity on multiple Avalanche-based platforms.
 
+- Crosschain payments through Chainlink’s CCIP
+By making use of the CCIP protocol implemented by Chainlink, Summit boasts its own Receiver smart contract that allows for interaction with the protocol from many EVM-based blockchains, such as Ethereum, Arbitrum, Polygon, Base and many others. A sample transaction is [available here.](https://ccip.chain.link/msg/0x06315877e2c41a55c84faa210aa92e154f1d56003d57fbf33491e4514277b68e) 
+
+- We use Chainlink functions to power an authorization system tailored to filter bots and nefarious actors. A sample authentication request is [available here.](https://functions.chain.link/fuji/4179/0xb9dba88a990fdbb0f29c73bcc3a3e835dfe74f27931d9bd040f7df730ec75d3b)
 
 
 ## Testnet
