@@ -12,7 +12,8 @@ The code for the Summit smart contract and its UI are [available on github](http
 
 The contract is currently live on the Fuji Testnet and verified on the explorer, [you can access it here](https://testnet.snowtrace.io/address/0x3dc7bdf76ed0df86c15978c89ee1ea13c692af88/contract/43113/code?chainId=43113)
 
-Articles are also available as NFTs, tradable on OpenSea and other NFT marketplaces: [OpenSea](https://testnets.opensea.io/fr/assets/avalanche-fuji/0x30cdaa09e7a763ca2521fe6a9710776bd7a746e6/6408127683748287498525528440796427317281100039138196694152555658537814982656)
+Articles are also available as NFTs, tradable on OpenSea and other NFT marketplaces: [OpenSea]([https://testnets.opensea.io/fr/assets/avalanche-fuji/0x30cdaa09e7a763ca2521fe6a9710776bd7a746e6/6408127683748287498525528440796427317281100039138196694152555658537814982656](https://testnets.opensea.io/assets/avalanche-fuji/0x3dc7bdf76ed0df86c15978c89ee1ea13c692af88/86088461035141156114660501042217095135046502368911360769336884879478585556992
+))
 
 
 ## Key features
